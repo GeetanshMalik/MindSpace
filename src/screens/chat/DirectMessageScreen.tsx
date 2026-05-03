@@ -23,7 +23,7 @@ import {
   DMType,
 } from '../../services/firebase/firestore';
 import { uploadMedia, getMediaPath, getExtensionFromUri, MEDIA_LIMITS } from '../../services/firebase/storage';
-import { UserProfile, getProfileDisplayName, getProfilePhotoURL } from '../../types/profile';
+import { UserProfile, getProfileDisplayName, getProfilePhotoURL, getProfileHeadline } from '../../types/profile';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -45,6 +45,7 @@ export const DirectMessageScreen = () => {
   const [uploading, setUploading] = useState(false);
   const displayFriendName = getProfileDisplayName(friendProfile, friendName);
   const friendPhotoURL = getProfilePhotoURL(friendProfile);
+  const friendHeadline = getProfileHeadline(friendProfile);
   const currentDisplayName = getProfileDisplayName(profile, user?.displayName || 'Someone');
 
   useEffect(() => {
@@ -317,8 +318,9 @@ export const DirectMessageScreen = () => {
               {displayFriendName}
             </Text>
             <View style={styles.onlineRow}>
-              <View style={[styles.onlineDot, { backgroundColor: '#4caf50' }]} />
-              <Text style={[styles.onlineLabel, { color: C.onSurfaceVariant }]}>Online</Text>
+              <Text translate={false} style={[styles.onlineLabel, { color: C.onSurfaceVariant }]} numberOfLines={1}>
+                {friendHeadline}
+              </Text>
             </View>
           </View>
         </TouchableOpacity>

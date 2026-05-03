@@ -649,6 +649,8 @@ const zh: TranslationDictionary = {
   "This will permanently delete your account and all associated data. This action cannot be undone.": "这将永久删除您的帐户和所有相关数据。此操作无法撤消。",
   "Account Deletion": "账户删除",
   "Please contact support@mindspace.app to complete account deletion.": "请联系 support@mindspace.app 完成帐户删除。"
+  "Copy Message": "复制消息",
+  "Delete for Me": "为我删除",
 };
 
 export default zh;

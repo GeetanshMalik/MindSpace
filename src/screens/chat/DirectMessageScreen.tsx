@@ -427,7 +427,6 @@ export const DirectMessageScreen = () => {
             )}
             {[
               { icon: 'copy-outline', label: 'Copy Message', onPress: handleCopy, color: C.onSurface },
-              { icon: 'arrow-redo-outline', label: 'Forward', onPress: handleForward, color: C.onSurface },
               { icon: 'trash-outline', label: 'Delete for Me', onPress: handleDeleteMsg, color: '#e57373' },
             ].map((action) => (
               <TouchableOpacity key={action.label} style={styles.actionRow} onPress={action.onPress} activeOpacity={0.7}>

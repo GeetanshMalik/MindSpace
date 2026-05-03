@@ -649,6 +649,8 @@ const ja: TranslationDictionary = {
   "This will permanently delete your account and all associated data. This action cannot be undone.": "これにより、アカウントとすべての関連データが完全に削除されます。この操作は元に戻すことができません。",
   "Account Deletion": "アカウントの削除",
   "Please contact support@mindspace.app to complete account deletion.": "アカウントの削除を完了するには、support@mindspace.app までご連絡ください。"
+  "Copy Message": "メッセージをコピー",
+  "Delete for Me": "自分のために削除",
 };
 
 export default ja;

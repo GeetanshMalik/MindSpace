@@ -649,6 +649,8 @@ const bn: TranslationDictionary = {
   "This will permanently delete your account and all associated data. This action cannot be undone.": "এটি স্থায়ীভাবে আপনার অ্যাকাউন্ট এবং সমস্ত সম্পর্কিত ডেটা মুছে ফেলবে। এই ক্রিয়াটি পূর্বাবস্থায় ফেরানো যাবে না৷",
   "Account Deletion": "অ্যাকাউন্ট মুছে ফেলা",
   "Please contact support@mindspace.app to complete account deletion.": "অ্যাকাউন্ট মোছা সম্পূর্ণ করতে support@mindspace.app এর সাথে যোগাযোগ করুন।"
+  "Copy Message": "বার্তা কপি করুন",
+  "Delete for Me": "আমার জন্য মুছুন",
 };
 
 export default bn;

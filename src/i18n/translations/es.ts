@@ -650,6 +650,8 @@ const es: TranslationDictionary = {
   "This will permanently delete your account and all associated data. This action cannot be undone.": "Esto eliminará permanentemente su cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
   "Account Deletion": "Eliminación de cuenta",
   "Please contact support@mindspace.app to complete account deletion.": "Comuníquese con support@mindspace.app para completar la eliminación de la cuenta."
+  "Copy Message": "Copiar mensaje",
+  "Delete for Me": "Eliminar para mí",
 };
 
 export default es;

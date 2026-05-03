@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, Keyboard, Modal, Alert } from 'react-native';
+import { View, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator, Keyboard, Modal, Alert, Image } from 'react-native';
 import { Text } from '../../components/TranslatedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -11,6 +11,8 @@ import { sendToAI, AIMessage } from '../../services/ai/aiService';
 import { AI_CONFIG } from '../../services/ai/aiConfig';
 import { useAuthStore } from '../../store/authStore';
 import { getSageChatStorageKey, LEGACY_SAGE_CHAT_STORAGE_KEY } from '../../services/ai/sageStorage';
+
+const SAGE_AVATAR = require('../../../assets/logo_sage.png');
 
 interface DisplayMessage {
   id: string;
@@ -144,7 +146,7 @@ export const AIChatScreen = () => {
       >
         {!isUser && (
           <View style={[styles.sageAvatar, { backgroundColor: C.primaryContainer }]}>
-            <Text style={{ fontSize: 16 }}>{AI_CONFIG.COMPANION_AVATAR_EMOJI}</Text>
+            <Image source={SAGE_AVATAR} style={styles.sageAvatarImg} />
           </View>
         )}
         <View
@@ -191,7 +193,7 @@ export const AIChatScreen = () => {
           <Ionicons name="chevron-back" size={24} color={C.onSurface} />
         </TouchableOpacity>
         <View style={[styles.headerAvatar, { backgroundColor: C.primary }]}>
-          <Text style={{ fontSize: 20 }}>{AI_CONFIG.COMPANION_AVATAR_EMOJI}</Text>
+          <Image source={SAGE_AVATAR} style={styles.headerAvatarImg} />
         </View>
         <View style={styles.headerInfo}>
           <Text style={[styles.headerName, { color: C.onSurface }]}>{AI_CONFIG.COMPANION_NAME}</Text>
@@ -224,7 +226,7 @@ export const AIChatScreen = () => {
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <View style={[styles.emptyIcon, { backgroundColor: C.primaryContainer }]}>
-                <Text style={{ fontSize: 40 }}>{AI_CONFIG.COMPANION_AVATAR_EMOJI}</Text>
+                <Image source={SAGE_AVATAR} style={styles.emptyAvatarImg} />
               </View>
               <Text style={[styles.emptyTitle, { color: C.onSurface }]}>
                 Meet {AI_CONFIG.COMPANION_NAME}
@@ -259,7 +261,7 @@ export const AIChatScreen = () => {
         {isTyping && (
           <View style={[styles.typingRow]}>
             <View style={[styles.sageAvatar, { backgroundColor: C.primaryContainer }]}>
-              <Text style={{ fontSize: 14 }}>{AI_CONFIG.COMPANION_AVATAR_EMOJI}</Text>
+              <Image source={SAGE_AVATAR} style={styles.sageAvatarImg} />
             </View>
             <View style={[styles.typingBubble, { backgroundColor: C.surfaceContainerHigh }]}>
               <ActivityIndicator size="small" color={C.primary} />
@@ -374,6 +376,16 @@ const styles = StyleSheet.create({
   sageAvatar: {
     width: 28, height: 28, borderRadius: Radius.full,
     justifyContent: 'center', alignItems: 'center',
+    overflow: 'hidden',
+  },
+  sageAvatarImg: {
+    width: 28, height: 28, borderRadius: Radius.full,
+  },
+  headerAvatarImg: {
+    width: 40, height: 40, borderRadius: Radius.full,
+  },
+  emptyAvatarImg: {
+    width: 60, height: 60, borderRadius: Radius.full,
   },
   bubble: {
     padding: Spacing[3],

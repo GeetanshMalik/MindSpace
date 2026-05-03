@@ -1,25 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
-const baseConfig = require('./app.json').expo;
-
-module.exports = () => {
-  const expo = {
-    ...baseConfig,
-    splash: { ...baseConfig.splash },
-    ios: { ...baseConfig.ios },
-    android: {
-      ...baseConfig.android,
-      adaptiveIcon: { ...baseConfig.android.adaptiveIcon },
-    },
-    web: { ...baseConfig.web },
-    plugins: [...baseConfig.plugins],
-  };
-
+module.exports = ({ config }) => {
   const googleServicesPath = path.join(__dirname, 'google-services.json');
   if (!fs.existsSync(googleServicesPath)) {
-    delete expo.android.googleServicesFile;
+    if (config.android && config.android.googleServicesFile) {
+      delete config.android.googleServicesFile;
+    }
   }
 
-  return { expo };
+  return {
+    ...config,
+  };
 };

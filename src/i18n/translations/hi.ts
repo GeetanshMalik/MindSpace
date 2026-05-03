@@ -648,9 +648,17 @@ const hi: TranslationDictionary = {
   "Failed to clear data. Please try again.": "डेटा साफ़ करने में विफल. कृपया पुन: प्रयास करें।",
   "This will permanently delete your account and all associated data. This action cannot be undone.": "इससे आपका खाता और सभी संबद्ध डेटा स्थायी रूप से हटा दिया जाएगा। इस एक्शन को वापस नहीं किया जा सकता।",
   "Account Deletion": "खाता हटाना",
-  "Please contact support@mindspace.app to complete account deletion.": "खाता हटाने की प्रक्रिया पूरी करने के लिए कृपया support@mindspace.app से संपर्क करें।"
+  "Please contact support@mindspace.app to complete account deletion.": "खाता हटाने की प्रक्रिया पूरी करने के लिए कृपया support@mindspace.app से संपर्क करें।",
   "Copy Message": "संदेश कॉपी करें",
   "Delete for Me": "मेरे लिए हटाएं",
+  "Failed": "विफल",
+  "Feed Error": "फ़ीड त्रुटि",
+  "Could not post story. Please try again.": "स्टोरी पोस्ट नहीं की जा सकी। कृपया पुनः प्रयास करें।",
+  "Could not post. Please try again.": "पोस्ट नहीं किया जा सका। कृपया पुनः प्रयास करें।",
+  "Could not post comment.": "टिप्पणी पोस्ट नहीं की जा सकी।",
+  "Could not load the community feed. Please try again.": "समुदाय फ़ीड लोड नहीं किया जा सका। कृपया पुनः प्रयास करें।",
+  "Could not update post.": "पोस्ट अपडेट नहीं की जा सकी।",
+  "Could not hide post.": "पोस्ट छिपाया नहीं जा सका।",
 };
 
 export default hi;

@@ -648,9 +648,17 @@ const ja: TranslationDictionary = {
   "Failed to clear data. Please try again.": "データの消去に失敗しました。もう一度試してください。",
   "This will permanently delete your account and all associated data. This action cannot be undone.": "これにより、アカウントとすべての関連データが完全に削除されます。この操作は元に戻すことができません。",
   "Account Deletion": "アカウントの削除",
-  "Please contact support@mindspace.app to complete account deletion.": "アカウントの削除を完了するには、support@mindspace.app までご連絡ください。"
+  "Please contact support@mindspace.app to complete account deletion.": "アカウントの削除を完了するには、support@mindspace.app までご連絡ください。",
   "Copy Message": "メッセージをコピー",
   "Delete for Me": "自分のために削除",
+  "Failed": "失敗",
+  "Feed Error": "フィードエラー",
+  "Could not post story. Please try again.": "ストーリーを投稿できませんでした。もう一度お試しください。",
+  "Could not post. Please try again.": "投稿できませんでした。もう一度お試しください。",
+  "Could not post comment.": "コメントを投稿できませんでした。",
+  "Could not load the community feed. Please try again.": "コミュニティフィードを読み込めませんでした。もう一度お試しください。",
+  "Could not update post.": "投稿を更新できませんでした。",
+  "Could not hide post.": "投稿を非表示にできませんでした。",
 };
 
 export default ja;

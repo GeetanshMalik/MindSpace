@@ -648,9 +648,17 @@ const zh: TranslationDictionary = {
   "Failed to clear data. Please try again.": "清除数据失败。请再试一次。",
   "This will permanently delete your account and all associated data. This action cannot be undone.": "这将永久删除您的帐户和所有相关数据。此操作无法撤消。",
   "Account Deletion": "账户删除",
-  "Please contact support@mindspace.app to complete account deletion.": "请联系 support@mindspace.app 完成帐户删除。"
+  "Please contact support@mindspace.app to complete account deletion.": "请联系 support@mindspace.app 完成帐户删除。",
   "Copy Message": "复制消息",
   "Delete for Me": "为我删除",
+  "Failed": "失败",
+  "Feed Error": "动态错误",
+  "Could not post story. Please try again.": "无法发布动态。请重试。",
+  "Could not post. Please try again.": "无法发布。请重试。",
+  "Could not post comment.": "无法发布评论。",
+  "Could not load the community feed. Please try again.": "无法加载社区动态。请重试。",
+  "Could not update post.": "无法更新帖子。",
+  "Could not hide post.": "无法隐藏帖子。",
 };
 
 export default zh;

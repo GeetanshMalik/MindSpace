@@ -648,9 +648,17 @@ const bn: TranslationDictionary = {
   "Failed to clear data. Please try again.": "ডেটা সাফ করতে ব্যর্থ হয়েছে৷ আবার চেষ্টা করুন.",
   "This will permanently delete your account and all associated data. This action cannot be undone.": "এটি স্থায়ীভাবে আপনার অ্যাকাউন্ট এবং সমস্ত সম্পর্কিত ডেটা মুছে ফেলবে। এই ক্রিয়াটি পূর্বাবস্থায় ফেরানো যাবে না৷",
   "Account Deletion": "অ্যাকাউন্ট মুছে ফেলা",
-  "Please contact support@mindspace.app to complete account deletion.": "অ্যাকাউন্ট মোছা সম্পূর্ণ করতে support@mindspace.app এর সাথে যোগাযোগ করুন।"
+  "Please contact support@mindspace.app to complete account deletion.": "অ্যাকাউন্ট মোছা সম্পূর্ণ করতে support@mindspace.app এর সাথে যোগাযোগ করুন।",
   "Copy Message": "বার্তা কপি করুন",
   "Delete for Me": "আমার জন্য মুছুন",
+  "Failed": "ব্যর্থ",
+  "Feed Error": "ফিড ত্রুটি",
+  "Could not post story. Please try again.": "স্টোরি পোস্ট করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "Could not post. Please try again.": "পোস্ট করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "Could not post comment.": "মন্তব্য পোস্ট করা যায়নি।",
+  "Could not load the community feed. Please try again.": "কমিউনিটি ফিড লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+  "Could not update post.": "পোস্ট আপডেট করা যায়নি।",
+  "Could not hide post.": "পোস্ট লুকানো যায়নি।",
 };
 
 export default bn;

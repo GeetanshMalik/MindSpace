@@ -648,9 +648,17 @@ const ar: TranslationDictionary = {
   "Failed to clear data. Please try again.": "فشل في مسح البيانات. يرجى المحاولة مرة أخرى.",
   "This will permanently delete your account and all associated data. This action cannot be undone.": "سيؤدي هذا إلى حذف حسابك وجميع البيانات المرتبطة به نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
   "Account Deletion": "حذف الحساب",
-  "Please contact support@mindspace.app to complete account deletion.": "يرجى الاتصال بـ support@mindspace.app لإكمال حذف الحساب."
+  "Please contact support@mindspace.app to complete account deletion.": "يرجى الاتصال بـ support@mindspace.app لإكمال حذف الحساب.",
   "Copy Message": "نسخ الرسالة",
   "Delete for Me": "حذف لدي",
+  "Failed": "فشل",
+  "Feed Error": "خطأ في التغذية",
+  "Could not post story. Please try again.": "تعذر نشر القصة. يرجى المحاولة مرة أخرى.",
+  "Could not post. Please try again.": "تعذر النشر. يرجى المحاولة مرة أخرى.",
+  "Could not post comment.": "تعذر نشر التعليق.",
+  "Could not load the community feed. Please try again.": "تعذر تحميل تغذية المجتمع. يرجى المحاولة مرة أخرى.",
+  "Could not update post.": "تعذر تحديث المنشور.",
+  "Could not hide post.": "تعذر إخفاء المنشور.",
 };
 
 export default ar;

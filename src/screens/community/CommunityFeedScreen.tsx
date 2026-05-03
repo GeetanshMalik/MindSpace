@@ -431,7 +431,7 @@ const CommentSheet: React.FC<CommentSheetProps> = ({
       }
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 200);
     } catch (e) {
-      Alert.alert('Error', 'Could not post comment.');
+      Alert.alert(t('Error'), t('Could not post comment.'));
     }
   };
 
@@ -686,7 +686,7 @@ export const CommunityFeedScreen = () => {
       setFeedCursor(page.cursor);
     } catch (error) {
       console.warn('Failed to load feed:', error);
-      Alert.alert('Feed Error', 'Could not load the community feed. Please try again.');
+      Alert.alert(t('Feed Error'), t('Could not load the community feed. Please try again.'));
     } finally {
       setLoadingFeed(false);
       setRefreshingFeed(false);
@@ -926,7 +926,7 @@ export const CommunityFeedScreen = () => {
       setPostText(''); setPostImage(null); setIsVentMode(false); setNewPostCategory('General'); setShowCreatePost(false);
       refreshFeed(false);
     } catch (e) {
-      Alert.alert('Error', 'Could not post. Please try again.');
+      Alert.alert(t('Error'), t('Could not post. Please try again.'));
     } finally {
       setPosting(false);
     }
@@ -1065,7 +1065,7 @@ export const CommunityFeedScreen = () => {
       setEditingPost(null);
       setEditText('');
     } catch (e) {
-      Alert.alert('Error', 'Could not update post.');
+      Alert.alert(t('Error'), t('Could not update post.'));
     }
   };
 
@@ -1091,7 +1091,7 @@ export const CommunityFeedScreen = () => {
     try {
       await hidePostForUser(menuPost.id!, user.uid);
       setPosts((current) => current.filter((post) => post.id !== menuPost.id));
-    } catch (e) { Alert.alert('Error', 'Could not hide post.'); }
+    } catch (e) { Alert.alert(t('Error'), t('Could not hide post.')); }
   };
 
   const handleSavePost = () => {

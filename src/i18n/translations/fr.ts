@@ -648,9 +648,17 @@ const fr: TranslationDictionary = {
   "Failed to clear data. Please try again.": "Échec de la suppression des données. Veuillez réessayer.",
   "This will permanently delete your account and all associated data. This action cannot be undone.": "Cela supprimera définitivement votre compte et toutes les données associées. Cette action ne peut pas être annulée.",
   "Account Deletion": "Suppression de compte",
-  "Please contact support@mindspace.app to complete account deletion.": "Veuillez contacter support@mindspace.app pour finaliser la suppression du compte."
+  "Please contact support@mindspace.app to complete account deletion.": "Veuillez contacter support@mindspace.app pour finaliser la suppression du compte.",
   "Copy Message": "Copier le message",
   "Delete for Me": "Supprimer pour moi",
+  "Failed": "Échoué",
+  "Feed Error": "Erreur de flux",
+  "Could not post story. Please try again.": "Impossible de publier la story. Veuillez réessayer.",
+  "Could not post. Please try again.": "Impossible de publier. Veuillez réessayer.",
+  "Could not post comment.": "Impossible de publier le commentaire.",
+  "Could not load the community feed. Please try again.": "Impossible de charger le flux de la communauté. Veuillez réessayer.",
+  "Could not update post.": "Impossible de mettre à jour la publication.",
+  "Could not hide post.": "Impossible de masquer la publication.",
 };
 
 export default fr;

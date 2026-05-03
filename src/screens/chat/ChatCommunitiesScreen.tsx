@@ -471,10 +471,6 @@ export const ChatCommunitiesScreen = () => {
                 end={{ x: 1, y: 1 }}
                 style={styles.sageCard}
               >
-                <View style={styles.pinnedBadge}>
-                  <Ionicons name="pin" size={10} color={C.primary} />
-                  <Text style={[styles.pinnedText, { color: C.primary }]}>PINNED</Text>
-                </View>
                 <View style={styles.sageRow}>
                   <View style={[styles.sageAvatar, { backgroundColor: C.primary }]}>
                     <Image source={SAGE_AVATAR} style={styles.sageAvatarImg} />

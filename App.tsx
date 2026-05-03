@@ -34,14 +34,18 @@ export default function App() {
   const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
-    // Initialize local SQLite database
-    initDatabase();
+    try {
+      // Initialize local SQLite database
+      initDatabase();
+    } catch (e) {
+      console.warn('SQLite init failed:', e);
+    }
     // Subscribe to Firebase auth state changes
     const unsubscribe = initAuthListener();
     // Load persisted theme settings
     useThemeStore.getState().loadSettings();
     // Initialize default communities in Firestore (no-op if already exist)
-    initializeCommunities();
+    initializeCommunities().catch((e: any) => console.warn('Communities init failed:', e));
     return unsubscribe;
   }, []);
 

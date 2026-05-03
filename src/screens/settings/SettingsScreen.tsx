@@ -9,7 +9,7 @@ import { useColors } from '../../theme/useColors';
 import { useThemeStore } from '../../store/themeStore';
 import { auth } from '../../services/firebase/config';
 import { EmailAuthProvider, reauthenticateWithCredential, signOut, updatePassword } from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { cancelStreakNotifications, setupStreakNotifications } from '../../store/streakStore';
 import { getLanguageLabel, LANGUAGE_OPTIONS, translateText } from '../../i18n';
 
@@ -184,28 +184,7 @@ export const SettingsScreen = () => {
     );
   }, [t]);
 
-  const handleClearData = useCallback(() => {
-    Alert.alert(
-      t('Clear Journal Data'),
-      t('This will permanently delete all local journal entries and mood logs. This cannot be undone.'),
-      [
-        { text: t('Cancel'), style: 'cancel' },
-        {
-          text: t('Clear Data'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem('journal_entries');
-              await AsyncStorage.removeItem('mood_entries');
-              Alert.alert(t('Done'), t('All local journal data has been cleared.'));
-            } catch (e) {
-              Alert.alert(t('Error'), t('Failed to clear data. Please try again.'));
-            }
-          },
-        },
-      ],
-    );
-  }, [t]);
+
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
@@ -430,16 +409,7 @@ export const SettingsScreen = () => {
             showArrow
             onPress={handleProfileVisibility}
           />
-          <View style={[styles.divider, { backgroundColor: C.outlineVariant }]} />
-          <SettingRow
-            colors={C}
-            icon="trash-outline"
-            label="Clear Local Journal Data"
-            showArrow
-            onPress={handleClearData}
-            iconColor={C.error}
-            iconBg={`${C.error}18`}
-          />
+
         </View>
 
         {/* ── About Mindspace ── */}

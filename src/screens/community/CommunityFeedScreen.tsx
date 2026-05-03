@@ -404,6 +404,7 @@ const CommentSheet: React.FC<CommentSheetProps> = ({
   onCommentNotify,
 }) => {
   const C = useColors();
+  const { t } = useTranslation();
   const [comments, setComments] = useState<PostComment[]>([]);
   const [text, setText] = useState('');
   const listRef = useRef<FlatList>(null);

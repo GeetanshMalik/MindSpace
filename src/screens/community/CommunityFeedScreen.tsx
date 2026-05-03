@@ -30,6 +30,8 @@ import { getCloudinaryVideoThumbnailUri, getStableVideoCoverOffset, getStoryCove
 import { applyPostReaction, getReactionCount, hasUserReaction, ReactionField } from '../../utils/postReactions';
 import { getPostShareUrl } from '../../utils/shareLinks';
 
+const APP_LOGO = require('../../../assets/logo.png');
+
 const TABS: Array<FeedTab | 'Categories'> = ['Trending', 'New', 'Categories'];
 const CATEGORIES = ['All', 'General', 'Depression', 'Break-up', 'Workload', 'Anxiety', 'Grief', 'Loneliness', 'Self-care', 'Stress', 'Relationships', 'Family', 'Career', 'Health', 'Others'];
 
@@ -1456,7 +1458,7 @@ export const CommunityFeedScreen = () => {
             {/* HEADER */}
             <View style={styles.header}>
               <View style={styles.logoRow}>
-                <View style={[styles.logoMark, { backgroundColor: C.primary }]}><Text style={[styles.logoMarkText, { color: C.onPrimary }]}>M</Text></View>
+                <Image source={APP_LOGO} style={styles.logoMarkImg} />
                 <Text style={[styles.logoText, { color: C.primary }]}>mindspace</Text>
               </View>
               <AppHeaderActions />
@@ -1609,7 +1611,7 @@ const styles = StyleSheet.create({
 
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing[5], paddingTop: 60, paddingBottom: Spacing[4] },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[2] },
-  logoMark: { width: 28, height: 28, borderRadius: Radius.full, justifyContent: 'center', alignItems: 'center' },
+  logoMarkImg: { width: 28, height: 28, borderRadius: Radius.full },
   logoMarkText: { fontFamily: Typography.fontFamily.bold, fontSize: 13 },
   logoText: { fontFamily: Typography.fontFamily.bold, fontSize: Typography.fontSize.lg },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing[3] },

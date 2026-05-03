@@ -32,6 +32,8 @@ import {
   getProfilePhotoURL,
 } from '../../types/profile';
 
+const APP_LOGO = require('../../../assets/logo.png');
+
 const timeAgo = (date: Date) => {
   const mins = Math.floor((Date.now() - date.getTime()) / 60000);
   if (mins < 60) return `${mins}m ago`;
@@ -458,7 +460,7 @@ export const UserProfileScreen = () => {
           {/* Top bar */}
           <View style={styles.topBar}>
             <View style={styles.topBarLeft}>
-              <Ionicons name="leaf" size={20} color={C.primary} />
+              <Image source={APP_LOGO} style={styles.appLogoImg} />
               <Text style={[styles.appTitle, { color: C.onSurface }]}>Mindspace</Text>
             </View>
             <View style={styles.topBarActions}>
@@ -894,6 +896,7 @@ const styles = StyleSheet.create({
   },
   topBarLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   topBarActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  appLogoImg: { width: 22, height: 22, borderRadius: Radius.full },
   appTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 20 },
   settingsBtn: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
   avatarWrap: { position: 'relative', marginBottom: 8 },

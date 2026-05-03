@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert, Linking, Animated } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert, Linking, Animated, Image } from 'react-native';
 import { Text } from '../../components/TranslatedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +17,8 @@ import { HomeStackParamList } from '../../navigation/MainTabNavigator';
 import { Community, Reflection, fetchFeedPage, subscribeToCommunities, subscribeToUserReflections } from '../../services/firebase/firestore';
 import { buildMoodWeek, formatMoodWeekRange, getDateKey, getMoodByScore, getReflectionMoodScore, MOOD_OPTIONS, toDate } from '../../utils/mood';
 import { useTranslation } from '../../i18n/useTranslation';
+
+const APP_LOGO = require('../../../assets/logo.png');
 
 type NavProp = StackNavigationProp<HomeStackParamList, 'Home'>;
 const { width } = Dimensions.get('window');
@@ -266,7 +268,7 @@ export const HomeScreen = () => {
           {/* Top bar */}
           <View style={styles.topBar}>
             <View style={styles.logoRow}>
-              <View style={[styles.logoMark, { backgroundColor: C.primary }]}><Text style={[styles.logoMarkText, { color: C.onPrimary }]}>M</Text></View>
+              <Image source={APP_LOGO} style={styles.logoMarkImg} />
               <Text style={[styles.logoText, { color: C.primary }]}>mindspace</Text>
             </View>
             <AppHeaderActions
@@ -484,7 +486,7 @@ const styles = StyleSheet.create({
   hero: { paddingTop: 56, paddingBottom: Spacing[6], paddingHorizontal: Spacing[5] },
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing[6] },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[2] },
-  logoMark: { width: 30, height: 30, borderRadius: Radius.full, justifyContent: 'center', alignItems: 'center' },
+  logoMarkImg: { width: 30, height: 30, borderRadius: Radius.full },
   logoMarkText: { fontFamily: Typography.fontFamily.bold, fontSize: 14 },
   logoText: { fontFamily: Typography.fontFamily.bold, fontSize: Typography.fontSize.lg },
   topActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing[3] },

@@ -30,6 +30,7 @@ import { useThemeStore } from '../../store/themeStore';
 import { translateText } from '../../i18n';
 
 const SAGE_AVATAR = require('../../../assets/logo_sage.png');
+const APP_LOGO = require('../../../assets/logo.png');
 
 type Tab = 'chats' | 'communities';
 type SearchMessageRow = {
@@ -284,9 +285,7 @@ export const ChatCommunitiesScreen = () => {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View style={styles.logoRow}>
-            <View style={[styles.logoMark, { backgroundColor: C.primary }]}>
-              <Text style={[styles.logoMarkText, { color: C.onPrimary }]}>M</Text>
-            </View>
+            <Image source={APP_LOGO} style={styles.logoMarkImg} />
             <Text style={[styles.logoText, { color: C.primary }]}>mindspace</Text>
           </View>
           <AppHeaderActions />
@@ -727,9 +726,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing[2] },
-  logoMark: {
+  logoMarkImg: {
     width: 28, height: 28, borderRadius: Radius.full,
-    justifyContent: 'center', alignItems: 'center',
   },
   logoMarkText: { fontFamily: Typography.fontFamily.bold, fontSize: 13 },
   logoText: { fontFamily: Typography.fontFamily.bold, fontSize: Typography.fontSize.md },

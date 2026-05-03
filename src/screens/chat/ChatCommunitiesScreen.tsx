@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ActivityIndicator, View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Modal, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { Text } from '../../components/TranslatedText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +28,8 @@ import { UserProfile, getProfileDisplayName, getProfilePhotoURL } from '../../ty
 import { getSageChatStorageKey } from '../../services/ai/sageStorage';
 import { useThemeStore } from '../../store/themeStore';
 import { translateText } from '../../i18n';
+
+const SAGE_AVATAR = require('../../../assets/logo_sage.png');
 
 type Tab = 'chats' | 'communities';
 type SearchMessageRow = {
@@ -476,7 +478,7 @@ export const ChatCommunitiesScreen = () => {
                 </View>
                 <View style={styles.sageRow}>
                   <View style={[styles.sageAvatar, { backgroundColor: C.primary }]}>
-                    <Text style={{ fontSize: 22 }}>{AI_CONFIG.COMPANION_AVATAR_EMOJI}</Text>
+                    <Image source={SAGE_AVATAR} style={styles.sageAvatarImg} />
                     <View style={[styles.sageOnline, { borderColor: C.primaryContainer }]} />
                   </View>
                   <View style={styles.sageInfo}>
@@ -870,6 +872,10 @@ const styles = StyleSheet.create({
     width: 52, height: 52, borderRadius: Radius.full,
     justifyContent: 'center', alignItems: 'center',
     position: 'relative',
+    overflow: 'hidden',
+  },
+  sageAvatarImg: {
+    width: 48, height: 48, borderRadius: Radius.full,
   },
   sageOnline: {
     position: 'absolute',

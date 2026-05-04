@@ -643,7 +643,7 @@ export const UserProfileScreen = () => {
 
       {/* ─── Edit Profile Modal ─── */}
       <Modal visible={showEditProfile} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowEditProfile(false)}>
-        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.surface }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.surface }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View style={[styles.editHeader, { borderBottomColor: C.outlineVariant + '22' }]}>
             <TouchableOpacity onPress={() => setShowEditProfile(false)}>
               <Text style={[styles.editCancel, { color: C.onSurfaceVariant }]}>Cancel</Text>

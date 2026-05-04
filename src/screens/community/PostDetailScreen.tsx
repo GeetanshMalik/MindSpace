@@ -331,7 +331,7 @@ export const PostDetailScreen = () => {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: C.surface }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style={C.surface === '#141412' ? 'light' : 'dark'} />
       <View style={[styles.header, { borderBottomColor: `${C.outlineVariant}33` }]}>

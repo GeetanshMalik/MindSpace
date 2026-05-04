@@ -651,7 +651,7 @@ export const ChatCommunitiesScreen = () => {
 
       {/* ── Create Community Modal ── */}
       <Modal visible={showCreateModal} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowCreateModal(false)}>
-        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.surface }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.surface }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View style={[styles.modalHeader, { borderBottomColor: C.outlineVariant + '33' }]}>
             <TouchableOpacity onPress={() => setShowCreateModal(false)}>
               <Text style={[styles.modalCancel, { color: C.onSurfaceVariant }]}>Cancel</Text>

@@ -27,6 +27,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './config';
 import { UserProfile } from '../../types/profile';
+import { sendPushNotification } from '../pushNotifications';
 
 // ─── User Helpers ────────────────────────────────────────────────────
 export const getUserDisplayName = async (userId: string): Promise<string> => {
@@ -1255,6 +1256,23 @@ export const createNotification = async (
     seenInBell: false,
     createdAt: serverTimestamp(),
   });
+
+  try {
+    const userSnap = await getDoc(doc(db, 'users', targetUserId));
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      if (userData.pushToken) {
+        let title = 'Mindspace';
+        if (notification.type === 'message') title = 'New Message';
+        else if (notification.type === 'comment') title = 'New Comment';
+        else if (notification.type === 'friend_request') title = 'Friend Request';
+        
+        await sendPushNotification(userData.pushToken, title, notification.text, { type: notification.type });
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to send push notification', e);
+  }
 };
 
 export const markNotificationRead = async (userId: string, notificationId: string) => {

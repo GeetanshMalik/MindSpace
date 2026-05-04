@@ -14,8 +14,9 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { initAuthListener, useAuthStore } from './src/store/authStore';
 import { useThemeStore } from './src/store/themeStore';
 import { initDatabase } from './src/services/database/sqlite';
-import { initializeCommunities } from './src/services/firebase/firestore';
+import { initializeCommunities, saveUserProfile } from './src/services/firebase/firestore';
 import { setupStreakNotifications, useStreakStore } from './src/store/streakStore';
+import { registerForPushNotificationsAsync } from './src/services/pushNotifications';
 import { Colors } from './src/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -56,6 +57,15 @@ export default function App() {
   useEffect(() => {
     if (!user?.uid) return;
     setupStreakNotifications().catch(console.warn);
+
+    // Register for real push notifications
+    if (notificationsEnabled) {
+      registerForPushNotificationsAsync().then((token) => {
+        if (token) {
+          saveUserProfile(user.uid, { pushToken: token }).catch(console.warn);
+        }
+      });
+    }
   }, [user?.uid, notificationsEnabled, dailyReminder]);
 
   useEffect(() => {

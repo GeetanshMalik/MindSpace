@@ -218,7 +218,7 @@ const CreateStoryModal: React.FC<CreateStoryModalProps> = ({ visible, onClose, o
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={reset}>
-      <KeyboardAvoidingView style={[csStyles.modal, { backgroundColor: C.surface }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={[csStyles.modal, { backgroundColor: C.surface }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={[csStyles.header, { borderBottomColor: C.outlineVariant + '44' }]}>
           <TouchableOpacity onPress={reset}>
             <Text style={[csStyles.cancelText, { color: C.onSurfaceVariant }]}>Cancel</Text>
@@ -469,7 +469,7 @@ const CommentSheet: React.FC<CommentSheetProps> = ({
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.surface }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.surface }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={[cmStyles.header, { borderBottomColor: C.outlineVariant + '33' }]}>
           <Text style={[cmStyles.title, { color: C.onSurface }]}>Comments</Text>
           <TouchableOpacity onPress={onClose}>
@@ -1286,7 +1286,7 @@ export const CommunityFeedScreen = () => {
 
       {/* Edit Post Modal */}
       <Modal visible={!!editingPost} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditingPost(null)}>
-        <KeyboardAvoidingView style={[csStyles.modal, { backgroundColor: C.surface }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={[csStyles.modal, { backgroundColor: C.surface }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View style={[csStyles.header, { borderBottomColor: C.outlineVariant + '44' }]}>
             <TouchableOpacity onPress={() => setEditingPost(null)}>
               <Text style={[csStyles.cancelText, { color: C.onSurfaceVariant }]}>Cancel</Text>
@@ -1316,7 +1316,7 @@ export const CommunityFeedScreen = () => {
 
       {/* Create Post Modal */}
       <Modal visible={showCreatePost} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowCreatePost(false)}>
-        <KeyboardAvoidingView style={[csStyles.modal, { backgroundColor: C.surface }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <KeyboardAvoidingView style={[csStyles.modal, { backgroundColor: C.surface }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View style={[csStyles.header, { borderBottomColor: C.outlineVariant + '44' }]}>
             <TouchableOpacity onPress={() => setShowCreatePost(false)}>
               <Text style={[csStyles.cancelText, { color: C.onSurfaceVariant }]}>Cancel</Text>

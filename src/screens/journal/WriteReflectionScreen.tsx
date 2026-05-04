@@ -105,7 +105,7 @@ export const WriteReflectionScreen = () => {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: C.surface }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {/* Header */}
       <View style={[styles.header, { backgroundColor: C.surface }]}>

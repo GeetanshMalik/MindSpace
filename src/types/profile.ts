@@ -11,6 +11,7 @@ export interface UserProfile {
   pronouns?: string;
   photoURL?: string | null;
   avatarUrl?: string | null;
+  pushToken?: string;
   createdAt?: any;
   updatedAt?: any;
 }

@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Spacing, Typography, Radius } from '../../theme';
 import { useColors } from '../../theme/useColors';
-import { Avatar } from '../../components/Avatar';
+import { ProfileAvatar, ProfileName } from '../../components/ProfileAvatar';
 import { subscribeToMessages, sendMessage, ChatMessage } from '../../services/firebase/firestore';
 import { useAuthStore } from '../../store/authStore';
 import { getProfileDisplayName, getProfilePhotoURL } from '../../types/profile';
@@ -44,9 +44,9 @@ export const PostDiscussionScreen = () => {
     const isMe = item.senderId === user?.uid;
     return (
       <View style={[styles.msgRow, isMe && styles.msgRowMe]}>
-        {!isMe && <Avatar name={item.senderName} uri={item.senderPhotoURL || undefined} size={32} />}
+        {!isMe && <ProfileAvatar userId={item.senderId} name={item.senderName} uri={item.senderPhotoURL} size={32} />}
         <View style={[styles.bubble, { backgroundColor: isMe ? C.primaryContainer : C.surfaceContainerHigh }, isMe ? styles.bubbleMeRadius : styles.bubbleThemRadius]}>
-          {!isMe && <Text translate={false} style={[styles.senderName, { color: C.primary }]}>{item.senderName}</Text>}
+          {!isMe && <ProfileName userId={item.senderId} fallbackName={item.senderName} style={[styles.senderName, { color: C.primary }]} />}
           <Text translate={false} style={[styles.msgText, { color: isMe ? C.onPrimaryContainer : C.onSurface }]}>{item.text}</Text>
         </View>
       </View>

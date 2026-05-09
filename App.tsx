@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
   useFonts,
@@ -16,9 +16,34 @@ import { useThemeStore } from './src/store/themeStore';
 import { initDatabase } from './src/services/database/sqlite';
 import { initializeCommunities, saveUserProfile } from './src/services/firebase/firestore';
 import { setupStreakNotifications, useStreakStore } from './src/store/streakStore';
-import { registerForPushNotificationsAsync } from './src/services/pushNotifications';
+import { registerPushTokenForUser, unregisterPushTokenForUser } from './src/services/pushTokenRegistry';
+import { initializeMobileAds } from './src/services/ads/rewardedStreakAds';
+import { configureFontScaling } from './src/theme/fontScaling';
 import { Colors } from './src/theme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { WelcomeGreetingModal } from './src/components/WelcomeGreetingModal';
+import { getProfileDisplayName } from './src/types/profile';
+
+configureFontScaling();
+
+const NEW_ACCOUNT_GREETING_WINDOW_MS = 48 * 60 * 60 * 1000;
+const WELCOME_BACK_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+type GreetingState = {
+  kind: 'new' | 'returning';
+  displayName: string;
+};
+
+const timestampToMillis = (value: any) => {
+  if (value?.toMillis) return value.toMillis();
+  if (value?.toDate) return value.toDate().getTime();
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -33,6 +58,9 @@ export default function App() {
   const notificationsEnabled = useThemeStore((s) => s.notificationsEnabled);
   const dailyReminder = useThemeStore((s) => s.dailyReminder);
   const user = useAuthStore((s) => s.user);
+  const profile = useAuthStore((s) => s.profile);
+  const [greeting, setGreeting] = useState<GreetingState | null>(null);
+  const handledGreetingUserRef = useRef<string | null>(null);
 
   useEffect(() => {
     try {
@@ -45,8 +73,7 @@ export default function App() {
     const unsubscribe = initAuthListener();
     // Load persisted theme settings
     useThemeStore.getState().loadSettings();
-    // Initialize default communities in Firestore (no-op if already exist)
-    initializeCommunities().catch((e: any) => console.warn('Communities init failed:', e));
+    initializeMobileAds().catch((e: any) => console.warn('AdMob init failed:', e?.message || e));
     return unsubscribe;
   }, []);
 
@@ -56,15 +83,18 @@ export default function App() {
 
   useEffect(() => {
     if (!user?.uid) return;
+    // Firestore rules require an authenticated user for this seed step.
+    initializeCommunities().catch((e: any) => console.warn('Communities init failed:', e));
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
     setupStreakNotifications().catch(console.warn);
 
-    // Register for real push notifications
     if (notificationsEnabled) {
-      registerForPushNotificationsAsync().then((token) => {
-        if (token) {
-          saveUserProfile(user.uid, { pushToken: token }).catch(console.warn);
-        }
-      });
+      registerPushTokenForUser(user.uid).catch(console.warn);
+    } else {
+      unregisterPushTokenForUser(user.uid).catch(console.warn);
     }
   }, [user?.uid, notificationsEnabled, dailyReminder]);
 
@@ -79,6 +109,46 @@ export default function App() {
     initStreak();
   }, [user?.uid]);
 
+  useEffect(() => {
+    if (!user?.uid) {
+      handledGreetingUserRef.current = null;
+      setGreeting(null);
+      return;
+    }
+    if (!profile?.uid || profile.uid !== user.uid) return;
+    if (handledGreetingUserRef.current === user.uid) return;
+
+    handledGreetingUserRef.current = user.uid;
+
+    const now = Date.now();
+    const authCreatedAt = user.metadata.creationTime ? Date.parse(user.metadata.creationTime) : 0;
+    const createdAt = timestampToMillis(profile.createdAt) || (Number.isNaN(authCreatedAt) ? 0 : authCreatedAt);
+    const lastAppOpenAt = timestampToMillis(profile.lastAppOpenAt);
+    const welcomeSeenAt = timestampToMillis(profile.welcomeGreetingSeenAt);
+    const isNewAccount = !welcomeSeenAt && createdAt > 0 && now - createdAt <= NEW_ACCOUNT_GREETING_WINDOW_MS;
+    const isReturningAfterBreak = !isNewAccount && lastAppOpenAt > 0 && now - lastAppOpenAt >= WELCOME_BACK_WINDOW_MS;
+
+    if (isNewAccount || isReturningAfterBreak) {
+      setGreeting({
+        kind: isNewAccount ? 'new' : 'returning',
+        displayName: getProfileDisplayName(profile, user.displayName || 'there'),
+      });
+    }
+
+    saveUserProfile(user.uid, {
+      lastAppOpenAt: now,
+      ...(isNewAccount ? { welcomeGreetingSeenAt: now } : {}),
+    }).catch((error) => console.warn('Could not update greeting status:', error));
+  }, [
+    profile?.createdAt,
+    profile?.lastAppOpenAt,
+    profile?.uid,
+    profile?.welcomeGreetingSeenAt,
+    user?.displayName,
+    user?.metadata.creationTime,
+    user?.uid,
+  ]);
+
   if (!fontsLoaded) {
     return <View style={styles.splash} />;
   }
@@ -87,6 +157,12 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style={themeMode === 'dark' ? 'light' : 'dark'} />
       <AppNavigator />
+      <WelcomeGreetingModal
+        visible={!!greeting}
+        kind={greeting?.kind || 'new'}
+        displayName={greeting?.displayName || 'there'}
+        onClose={() => setGreeting(null)}
+      />
     </GestureHandlerRootView>
   );
 }

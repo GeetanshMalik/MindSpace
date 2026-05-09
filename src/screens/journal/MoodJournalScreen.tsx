@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Animated, ScrollView, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Text } from '../../components/TranslatedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +23,6 @@ import {
 import { useTranslation } from '../../i18n/useTranslation';
 
 type NavProp = StackNavigationProp<HomeStackParamList, 'MoodJournal'>;
-const { width } = Dimensions.get('window');
 
 const PROMPTS = [
   'What made you smile today?',
@@ -40,6 +39,7 @@ const normalizeTags = (tags?: string[] | string) => {
 
 export const MoodJournalScreen = () => {
   const navigation = useNavigation<NavProp>();
+  const { width } = useWindowDimensions();
   const C = useColors();
   const { user } = useAuthStore();
   const { locale, t } = useTranslation();
@@ -49,7 +49,7 @@ export const MoodJournalScreen = () => {
 
   const weeklyMood = useMemo(() => buildMoodWeek(reflections), [reflections]);
   const weekRange = useMemo(() => formatMoodWeekRange(weeklyMood, locale), [locale, weeklyMood]);
-  const chartWidth = width - Spacing[5] * 2 - Spacing[4] * 2;
+  const chartWidth = Math.max(240, width - Spacing[5] * 2 - Spacing[4] * 2);
   const chartHeight = 150;
   const stepWidth = chartWidth / 6;
   const points = weeklyMood.map((day, index) => {

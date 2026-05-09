@@ -19,6 +19,7 @@ import {
   serverTimestamp,
   onSnapshot,
   increment,
+  runTransaction,
   Timestamp,
   Unsubscribe,
   writeBatch,
@@ -28,6 +29,7 @@ import {
 import { db } from './config';
 import { UserProfile } from '../../types/profile';
 import { sendPushNotification } from '../pushNotifications';
+import { isPushRelayConfigured, sendNotificationThroughRelay } from '../pushRelay';
 
 // ─── User Helpers ────────────────────────────────────────────────────
 export const getUserDisplayName = async (userId: string): Promise<string> => {
@@ -372,6 +374,7 @@ export interface UserStreak {
   streak: number;
   lastOpened: number | null;
   lostStreak: number;
+  missedStreakDays: number;
   hasLostStreak: boolean;
 }
 
@@ -379,6 +382,7 @@ const DEFAULT_STREAK: UserStreak = {
   streak: 0,
   lastOpened: null,
   lostStreak: 0,
+  missedStreakDays: 0,
   hasLostStreak: false,
 };
 
@@ -444,8 +448,14 @@ export interface ChatMessage {
   senderName: string;
   senderPhotoURL?: string | null;
   text: string;
+  type?: string;
+  mediaUrl?: string;
+  fileName?: string;
+  deletedFor?: string[];
   createdAt: any;
 }
+
+export const MESSAGE_DELETE_FOR_EVERYONE_WINDOW_MS = 15 * 60 * 1000;
 
 export interface Community {
   id: string;
@@ -456,6 +466,8 @@ export interface Community {
   members: string[];
   createdAt: any;
   category: string;
+  creatorId?: string | null;
+  isDefault?: boolean;
 }
 
 // ─── Default communities to initialize ───────────────────────────────
@@ -518,8 +530,19 @@ export const initializeCommunities = async () => {
           category: community.category,
           membersCount: 0,
           members: [],
+          creatorId: null,
+          isDefault: true,
           createdAt: serverTimestamp(),
         });
+      } else {
+        await setDoc(ref, {
+          name: community.name,
+          description: community.description,
+          emoji: community.emoji,
+          category: community.category,
+          creatorId: null,
+          isDefault: true,
+        }, { merge: true });
       }
     }
   } catch (e) {
@@ -541,29 +564,104 @@ export const subscribeToCommunities = (
   });
 };
 
+export const subscribeToCommunity = (
+  communityId: string,
+  callback: (community: Community | null) => void,
+  onError?: (error: Error) => void
+): Unsubscribe => {
+  return onSnapshot(
+    doc(db, 'communities', communityId),
+    (snap) => {
+      if (!snap.exists()) {
+        callback(null);
+        return;
+      }
+
+      callback({
+        id: snap.id,
+        ...snap.data(),
+      } as Community);
+    },
+    (error) => onError?.(error)
+  );
+};
+
 export const joinCommunity = async (communityId: string, userId: string) => {
   const ref = doc(db, 'communities', communityId);
-  await updateDoc(ref, {
-    members: arrayUnion(userId),
-    membersCount: increment(1),
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) throw new Error('Community not found');
+
+    const data = snap.data() as Community;
+    const members = Array.isArray(data.members) ? data.members : [];
+    if (members.includes(userId)) return;
+
+    const nextMembers = [...members, userId];
+    transaction.update(ref, {
+      members: nextMembers,
+      membersCount: nextMembers.length,
+    });
   });
 };
 
-export const createCustomCommunity = async (community: Omit<Community, 'id' | 'membersCount' | 'members' | 'createdAt'>, creatorId: string) => {
+export const createCustomCommunity = async (
+  community: Pick<Community, 'name' | 'description' | 'emoji' | 'category'>,
+  creatorId: string
+) => {
   return addDoc(collection(db, 'communities'), {
     ...community,
     membersCount: 1,
     members: [creatorId],
+    creatorId,
+    isDefault: false,
     createdAt: serverTimestamp(),
   });
 };
 
 export const leaveCommunity = async (communityId: string, userId: string) => {
   const ref = doc(db, 'communities', communityId);
-  await updateDoc(ref, {
-    members: arrayRemove(userId),
-    membersCount: increment(-1),
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
+    if (!snap.exists()) throw new Error('Community not found');
+
+    const data = snap.data() as Community;
+    const members = Array.isArray(data.members) ? data.members : [];
+    if (!members.includes(userId)) return;
+
+    const nextMembers = members.filter((memberId) => memberId !== userId);
+    transaction.update(ref, {
+      members: nextMembers,
+      membersCount: nextMembers.length,
+    });
   });
+};
+
+const deleteCommunityMessages = async (communityId: string) => {
+  const messagesSnap = await getDocs(collection(db, 'communities', communityId, 'messages'));
+  const docs = messagesSnap.docs;
+
+  for (let i = 0; i < docs.length; i += 450) {
+    const batch = writeBatch(db);
+    docs.slice(i, i + 450).forEach((messageDoc) => batch.delete(messageDoc.ref));
+    await batch.commit();
+  }
+};
+
+export const deleteCommunity = async (communityId: string, userId: string) => {
+  const ref = doc(db, 'communities', communityId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+
+  const data = snap.data() as Community;
+  if (data.isDefault) throw new Error('Default communities cannot be deleted');
+  if (data.creatorId !== userId) throw new Error('Only the creator can delete this community');
+
+  try {
+    await deleteCommunityMessages(communityId);
+  } catch (e) {
+    console.warn('Community message cleanup failed before delete:', e);
+  }
+  await deleteDoc(ref);
 };
 
 // ─── Community Chat Messages ─────────────────────────────────────────
@@ -571,15 +669,35 @@ export const sendCommunityMessage = async (
   communityId: string,
   message: Omit<ChatMessage, 'id' | 'createdAt'>
 ) => {
-  return addDoc(collection(db, 'communities', communityId, 'messages'), {
-    ...message,
-    createdAt: serverTimestamp(),
+  const clean: Record<string, any> = {};
+  for (const [key, value] of Object.entries(message)) {
+    if (value !== undefined) clean[key] = value;
+  }
+
+  const communityRef = doc(db, 'communities', communityId);
+  const messageRef = doc(collection(db, 'communities', communityId, 'messages'));
+
+  await runTransaction(db, async (transaction) => {
+    const communitySnap = await transaction.get(communityRef);
+    if (!communitySnap.exists()) throw new Error('Community not found');
+    const community = communitySnap.data() as Community;
+    if (!Array.isArray(community.members) || !community.members.includes(message.senderId)) {
+      throw new Error('Join this community before sending messages.');
+    }
+
+    transaction.set(messageRef, {
+      ...clean,
+      createdAt: serverTimestamp(),
+    });
   });
+
+  return messageRef;
 };
 
 export const subscribeToCommunityMessages = (
   communityId: string,
-  callback: (messages: ChatMessage[]) => void
+  callback: (messages: ChatMessage[]) => void,
+  userId?: string | null
 ): Unsubscribe => {
   const q = query(
     collection(db, 'communities', communityId, 'messages'),
@@ -587,8 +705,43 @@ export const subscribeToCommunityMessages = (
     limit(100)
   );
   return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() } as ChatMessage)));
+    const messages = snap.docs
+      .map((d) => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) } as ChatMessage))
+      .filter((message) => !userId || !Array.isArray(message.deletedFor) || !message.deletedFor.includes(userId));
+    callback(messages);
   });
+};
+
+export const deleteCommunityMessageForUser = async (
+  communityId: string,
+  messageId: string,
+  userId: string
+) => {
+  await updateDoc(doc(db, 'communities', communityId, 'messages', messageId), {
+    deletedFor: arrayUnion(userId),
+  });
+};
+
+export const deleteCommunityMessageForEveryone = async (
+  communityId: string,
+  messageId: string,
+  userId: string
+) => {
+  const ref = doc(db, 'communities', communityId, 'messages', messageId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+
+  const message = snap.data() as ChatMessage;
+  const createdAt = getTimestampMillis(message.createdAt);
+  if (
+    message.senderId !== userId ||
+    createdAt <= 0 ||
+    Date.now() - createdAt > MESSAGE_DELETE_FOR_EVERYONE_WINDOW_MS
+  ) {
+    throw new Error('Delete for everyone is only available for your messages sent within 15 minutes.');
+  }
+
+  await deleteDoc(ref);
 };
 
 // ─── Posts ──────────────────────────────────────────────────────
@@ -1186,15 +1339,26 @@ const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   emailNotifications: true,
 };
 
+const collectPushTokens = (userData: DocumentData) => {
+  const tokens = new Set<string>();
+  if (Array.isArray(userData.pushTokens)) {
+    userData.pushTokens
+      .filter((token: unknown): token is string => typeof token === 'string' && token.trim().length > 0)
+      .forEach((token: string) => tokens.add(token));
+  }
+  if (typeof userData.pushToken === 'string' && userData.pushToken.trim()) {
+    tokens.add(userData.pushToken);
+  }
+  return tokens;
+};
+
 const getNotificationPreferences = async (userId: string): Promise<NotificationPreferences> => {
   try {
-    const snap = await getDoc(doc(db, 'users', userId, 'settings', 'preferences'));
-    let data = snap.exists() ? snap.data() : {};
-    if (!snap.exists()) {
-      const userSnap = await getDoc(doc(db, 'users', userId));
-      const userData = userSnap.exists() ? userSnap.data() : {};
-      data = userData.notificationSettings || userData.appSettings || {};
-    }
+    // Client fallback can only rely on public profile fields once settings are
+    // owner-only. The Netlify relay reads the private settings server-side.
+    const userSnap = await getDoc(doc(db, 'users', userId));
+    const userData = userSnap.exists() ? userSnap.data() : {};
+    const data = userData.notificationSettings || {};
     return {
       notificationsEnabled: data.notificationsEnabled ?? DEFAULT_NOTIFICATION_PREFERENCES.notificationsEnabled,
       dailyReminder: data.dailyReminder ?? DEFAULT_NOTIFICATION_PREFERENCES.dailyReminder,
@@ -1246,6 +1410,15 @@ export const createNotification = async (
   targetUserId: string,
   notification: Omit<AppNotification, 'id' | 'createdAt' | 'read'>
 ) => {
+  if (isPushRelayConfigured()) {
+    try {
+      await sendNotificationThroughRelay(targetUserId, notification);
+      return;
+    } catch (error) {
+      console.warn('Push relay notification failed; trying client fallback:', error);
+    }
+  }
+
   const preferences = await getNotificationPreferences(targetUserId);
   if (!preferences.notificationsEnabled) return;
   if ((notification.type === 'reminder' || notification.type === 'streak') && !preferences.dailyReminder) return;
@@ -1258,16 +1431,30 @@ export const createNotification = async (
   });
 
   try {
-    const userSnap = await getDoc(doc(db, 'users', targetUserId));
+    const targetUserRef = doc(db, 'users', targetUserId);
+    const userSnap = await getDoc(targetUserRef);
     if (userSnap.exists()) {
       const userData = userSnap.data();
-      if (userData.pushToken) {
+      const pushTokens = collectPushTokens(userData);
+
+      if (pushTokens.size > 0) {
         let title = 'Mindspace';
         if (notification.type === 'message') title = 'New Message';
         else if (notification.type === 'comment') title = 'New Comment';
         else if (notification.type === 'friend_request') title = 'Friend Request';
-        
-        await sendPushNotification(userData.pushToken, title, notification.text, { type: notification.type });
+
+        await Promise.all(
+          Array.from(pushTokens).map((token) =>
+            sendPushNotification(token, title, notification.text, {
+              type: notification.type,
+              targetUserId,
+              fromUserId: notification.fromUserId,
+              postId: notification.postId,
+              commentId: notification.commentId,
+              chatId: notification.chatId,
+            })
+          )
+        );
       }
     }
   } catch (e) {
@@ -1382,6 +1569,15 @@ export const subscribeToFriendshipStatus = (
 // ─── Direct Messages ───────────────────────────────────────────────
 export type DMType = 'text' | 'image' | 'video' | 'audio' | 'document';
 
+export interface MessageReply {
+  id: string;
+  senderId: string;
+  senderName: string;
+  text: string;
+  type?: DMType | string;
+  fileName?: string;
+}
+
 export interface DirectMessage {
   id?: string;
   chatId: string;
@@ -1391,7 +1587,9 @@ export interface DirectMessage {
   type?: DMType;
   mediaUrl?: string;
   fileName?: string;
+  replyTo?: MessageReply;
   deletedFor?: string[];
+  isForwarded?: boolean;
   createdAt: any;
 }
 
@@ -1413,6 +1611,8 @@ export const sendDirectMessage = async (
   type: DMType = 'text',
   mediaUrl?: string,
   fileName?: string,
+  replyTo?: MessageReply,
+  isForwarded?: boolean,
 ) => {
   const chatId = getChatId(senderId, receiverId);
   await addDoc(collection(db, 'direct_messages'), {
@@ -1423,6 +1623,8 @@ export const sendDirectMessage = async (
     type,
     ...(mediaUrl ? { mediaUrl } : {}),
     ...(fileName ? { fileName } : {}),
+    ...(replyTo ? { replyTo } : {}),
+    ...(isForwarded ? { isForwarded } : {}),
     createdAt: serverTimestamp(),
   });
 };
@@ -1431,10 +1633,28 @@ export const deleteDirectMessage = async (messageId: string) => {
   await deleteDoc(doc(db, 'direct_messages', messageId));
 };
 
-export const deleteAllDirectMessages = async (chatId: string) => {
-  const q = query(collection(db, 'direct_messages'), where('chatId', '==', chatId));
-  const snap = await getDocs(q);
-  const deletePromises = snap.docs.map(d => deleteDoc(doc(db, 'direct_messages', d.id)));
+const getDirectMessageParticipantDocs = async (chatId: string, userId: string) => {
+  const [sentSnap, receivedSnap] = await Promise.all([
+    getDocs(query(
+      collection(db, 'direct_messages'),
+      where('chatId', '==', chatId),
+      where('senderId', '==', userId)
+    )),
+    getDocs(query(
+      collection(db, 'direct_messages'),
+      where('chatId', '==', chatId),
+      where('receiverId', '==', userId)
+    )),
+  ]);
+
+  const docsById = new Map<string, QueryDocumentSnapshot<DocumentData>>();
+  [...sentSnap.docs, ...receivedSnap.docs].forEach((messageDoc) => docsById.set(messageDoc.id, messageDoc));
+  return Array.from(docsById.values());
+};
+
+export const deleteAllDirectMessages = async (chatId: string, userId: string) => {
+  const docs = await getDirectMessageParticipantDocs(chatId, userId);
+  const deletePromises = docs.map(d => deleteDoc(doc(db, 'direct_messages', d.id)));
   await Promise.all(deletePromises);
 };
 
@@ -1444,11 +1664,28 @@ export const deleteDirectMessageForUser = async (messageId: string, userId: stri
   });
 };
 
+export const deleteDirectMessageForEveryone = async (messageId: string, userId: string) => {
+  const ref = doc(db, 'direct_messages', messageId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+
+  const message = snap.data() as DirectMessage;
+  const createdAt = getTimestampMillis(message.createdAt);
+  if (
+    message.senderId !== userId ||
+    createdAt <= 0 ||
+    Date.now() - createdAt > MESSAGE_DELETE_FOR_EVERYONE_WINDOW_MS
+  ) {
+    throw new Error('Delete for everyone is only available for your messages sent within 15 minutes.');
+  }
+
+  await deleteDoc(ref);
+};
+
 export const deleteAllDirectMessagesForUser = async (chatId: string, userId: string) => {
-  const q = query(collection(db, 'direct_messages'), where('chatId', '==', chatId));
-  const snap = await getDocs(q);
+  const docs = await getDirectMessageParticipantDocs(chatId, userId);
   await commitBatchedUpdates(
-    snap.docs.map((d) => ({
+    docs.map((d) => ({
       ref: d.ref,
       data: { deletedFor: arrayUnion(userId) },
     }))
@@ -1460,13 +1697,21 @@ export const subscribeToDirectMessages = (
   userId: string,
   callback: (messages: DirectMessage[]) => void
 ): Unsubscribe => {
-  const q = query(
+  const sentQuery = query(
     collection(db, 'direct_messages'),
-    where('chatId', '==', chatId)
+    where('chatId', '==', chatId),
+    where('senderId', '==', userId)
   );
-  return onSnapshot(q, snap => {
-    const messages = snap.docs
-      .map(d => ({ id: d.id, ...d.data() } as DirectMessage))
+  const receivedQuery = query(
+    collection(db, 'direct_messages'),
+    where('chatId', '==', chatId),
+    where('receiverId', '==', userId)
+  );
+  let sentMessages: DirectMessage[] = [];
+  let receivedMessages: DirectMessage[] = [];
+
+  const emit = () => {
+    const messages = [...sentMessages, ...receivedMessages]
       .filter(message => !Array.isArray(message.deletedFor) || !message.deletedFor.includes(userId));
     messages.sort((a, b) => {
       const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
@@ -1474,7 +1719,21 @@ export const subscribeToDirectMessages = (
       return tb - ta;
     });
     callback(messages);
+  };
+
+  const unsubSent = onSnapshot(sentQuery, snap => {
+    sentMessages = snap.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) } as DirectMessage));
+    emit();
   });
+  const unsubReceived = onSnapshot(receivedQuery, snap => {
+    receivedMessages = snap.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) } as DirectMessage));
+    emit();
+  });
+
+  return () => {
+    unsubSent();
+    unsubReceived();
+  };
 };
 
 // ─── DM Conversations List ─────────────────────────────────────────
@@ -1599,12 +1858,12 @@ export const subscribeToUserDMConversations = (
   };
 
   const unsub1 = onSnapshot(q1, snap => {
-    sentMsgs = snap.docs.map(d => ({ id: d.id, ...d.data() } as DirectMessage));
+    sentMsgs = snap.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) } as DirectMessage));
     buildConvos();
   });
 
   const unsub2 = onSnapshot(q2, snap => {
-    recvMsgs = snap.docs.map(d => ({ id: d.id, ...d.data() } as DirectMessage));
+    recvMsgs = snap.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) } as DirectMessage));
     buildConvos();
   });
 

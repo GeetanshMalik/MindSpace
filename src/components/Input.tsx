@@ -5,6 +5,7 @@ import { Radius, Spacing, Typography } from '../theme';
 import { useColors } from '../theme/useColors';
 import { translateIfNeeded } from '../i18n';
 import { useThemeStore } from '../store/themeStore';
+import { cappedFontScalingProps } from '../theme/fontScaling';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -28,6 +29,7 @@ export const Input: React.FC<InputProps> = ({
       {label && <Text style={[styles.label, { color: C.onSurfaceVariant }]}>{label}</Text>}
       <TextInput
         {...props}
+        {...cappedFontScalingProps}
         placeholder={translateIfNeeded(props.placeholder, language)}
         style={[
           styles.input,

@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Text } from '../../components/TranslatedText';
-import { Avatar } from '../../components/Avatar';
+import { ProfileAvatar, ProfileName } from '../../components/ProfileAvatar';
 import { Radius, Spacing, Typography } from '../../theme';
 import { useColors } from '../../theme/useColors';
 import { useAuthStore } from '../../store/authStore';
@@ -358,15 +358,18 @@ export const PostDetailScreen = () => {
           showsVerticalScrollIndicator={false}
         >
           <TouchableOpacity style={styles.authorRow} onPress={openProfile} activeOpacity={post.isVentMode ? 1 : 0.75}>
-            <Avatar
+            <ProfileAvatar
+              userId={!post.isVentMode ? post.authorId : undefined}
               name={post.isVentMode ? '?' : post.authorName}
               uri={!post.isVentMode ? post.authorPhotoURL || undefined : undefined}
               size={44}
             />
             <View style={styles.authorMeta}>
-              <Text translate={false} style={[styles.authorName, { color: C.onSurface }]}>
-                {post.isVentMode ? 'Anonymous' : post.authorName}
-              </Text>
+              {post.isVentMode ? (
+                <Text translate={false} style={[styles.authorName, { color: C.onSurface }]}>Anonymous</Text>
+              ) : (
+                <ProfileName userId={post.authorId} fallbackName={post.authorName} style={[styles.authorName, { color: C.onSurface }]} />
+              )}
               <Text style={[styles.postMeta, { color: C.onSurfaceVariant }]}>
                 {post.createdAt?.toDate ? timeAgo(post.createdAt.toDate()) : 'just now'} - {post.category || 'General'}
               </Text>
@@ -433,7 +436,7 @@ export const PostDetailScreen = () => {
           {comments.length > 0 ? comments.map((comment) => (
             <View key={comment.id || `${comment.authorId}-${comment.text}`} style={styles.commentRow}>
               <TouchableOpacity activeOpacity={0.75} onPress={() => openAuthorFromComment(comment)}>
-                <Avatar name={comment.authorName} uri={comment.authorPhotoURL || undefined} size={34} />
+                <ProfileAvatar userId={comment.authorId} name={comment.authorName} uri={comment.authorPhotoURL} size={34} />
               </TouchableOpacity>
               <View
                 style={[
@@ -442,7 +445,7 @@ export const PostDetailScreen = () => {
                 ]}
               >
                 <View style={styles.commentTopRow}>
-                  <Text translate={false} style={[styles.commentAuthor, { color: C.primary }]}>{comment.authorName}</Text>
+                  <ProfileName userId={comment.authorId} fallbackName={comment.authorName} style={[styles.commentAuthor, { color: C.primary }]} />
                   {canDeleteComment(comment) ? (
                     <TouchableOpacity onPress={() => handleDeleteComment(comment)} hitSlop={8} activeOpacity={0.65}>
                       <Ionicons name="trash-outline" size={15} color={C.error} />

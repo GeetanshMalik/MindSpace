@@ -8,6 +8,7 @@ export interface StreakState {
   streak: number;
   lastOpened: number | null;
   lostStreak: number; 
+  missedStreakDays: number;
   hasLostStreak: boolean;
   
   loadStreak: (userId?: string | null) => Promise<void>;
@@ -37,6 +38,7 @@ export const useStreakStore = create<StreakState>((set, get) => ({
   streak: 0,
   lastOpened: null,
   lostStreak: 0,
+  missedStreakDays: 0,
   hasLostStreak: false,
 
   loadStreak: async (userId) => {
@@ -45,7 +47,7 @@ export const useStreakStore = create<StreakState>((set, get) => ({
         const data = await getUserStreak(userId);
         set({ userId, ...data });
       } else {
-        set({ userId: null, streak: 0, lastOpened: null, lostStreak: 0, hasLostStreak: false });
+        set({ userId: null, streak: 0, lastOpened: null, lostStreak: 0, missedStreakDays: 0, hasLostStreak: false });
       }
     } catch(e) {}
   },
@@ -62,10 +64,13 @@ export const useStreakStore = create<StreakState>((set, get) => ({
     
     let newStreak = streak;
     let newLostStreak = get().lostStreak;
+    let newMissedStreakDays = get().missedStreakDays;
     let newHasLostStreak = get().hasLostStreak;
 
     if (!lastOpened) {
       newStreak = 1;
+      newLostStreak = 0;
+      newMissedStreakDays = 0;
       newHasLostStreak = false;
     } else {
       const lastOpenedBegin = getStartOfDay(lastOpened);
@@ -74,11 +79,14 @@ export const useStreakStore = create<StreakState>((set, get) => ({
       if (diffDays === 1) {
         // Opened next day -> increment streak
         newStreak += 1;
+        newLostStreak = 0;
+        newMissedStreakDays = 0;
         newHasLostStreak = false;
       } else if (diffDays > 1) {
         // Missed one or more days
         if (streak > 0) {
           newLostStreak = streak;
+          newMissedStreakDays = Math.max(1, diffDays - 1);
           newHasLostStreak = true;
         }
         newStreak = 1; // Current open starts a new streak
@@ -89,6 +97,7 @@ export const useStreakStore = create<StreakState>((set, get) => ({
       streak: newStreak,
       lastOpened: now,
       lostStreak: newLostStreak,
+      missedStreakDays: newMissedStreakDays,
       hasLostStreak: newHasLostStreak,
     };
     
@@ -103,12 +112,14 @@ export const useStreakStore = create<StreakState>((set, get) => ({
     const userId = userIdParam || get().userId;
     if (!userId) return;
 
-    const { lostStreak } = get();
+    const { lostStreak, missedStreakDays } = get();
+    const restoredDays = Math.max(1, missedStreakDays || 0);
     const nextState: UserStreak = {
-      streak: lostStreak + 1, // Restoring continues from the lost count, plus today
+      streak: lostStreak + restoredDays + 1, // Previous streak + restored missed days + today
       lastOpened: Date.now(),
       hasLostStreak: false,
       lostStreak: 0,
+      missedStreakDays: 0,
     };
     set({ userId, ...nextState });
     await saveUserStreak(userId, nextState);

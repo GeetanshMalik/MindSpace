@@ -15,6 +15,9 @@ import {
   subscribeToCommunities,
   initializeCommunities,
   createCustomCommunity,
+  joinCommunity,
+  leaveCommunity,
+  deleteCommunity,
   DMConversation,
   subscribeToUserDMConversations,
   subscribeToUserProfile,
@@ -33,6 +36,7 @@ const SAGE_AVATAR = require('../../../assets/logo_sage.png');
 const APP_LOGO = require('../../../assets/logo.png');
 
 type Tab = 'chats' | 'communities';
+type CommunityView = 'joined' | 'explore';
 type SearchMessageRow = {
   id: string;
   type: 'dm' | 'community';
@@ -57,6 +61,7 @@ export const ChatCommunitiesScreen = () => {
   const language = useThemeStore((state) => state.language);
   const t = useMemo(() => (value: string) => translateText(value, language), [language]);
   const [activeTab, setActiveTab] = useState<Tab>('chats');
+  const [activeCommunityView, setActiveCommunityView] = useState<CommunityView>('joined');
   const [searchQuery, setSearchQuery] = useState('');
   const [dmConversations, setDmConversations] = useState<DMConversation[]>([]);
   const [friendProfiles, setFriendProfiles] = useState<Record<string, UserProfile | null>>({});
@@ -82,10 +87,14 @@ export const ChatCommunitiesScreen = () => {
 
   // Initialize communities & subscribe
   useEffect(() => {
-    initializeCommunities();
+    if (!user?.uid) {
+      setCommunities([]);
+      return undefined;
+    }
+    initializeCommunities().catch((e: any) => console.warn('Communities init failed:', e));
     const unsub = subscribeToCommunities(setCommunities);
     return unsub;
-  }, []);
+  }, [user?.uid]);
 
   // Subscribe to DM conversations
   useEffect(() => {
@@ -160,6 +169,18 @@ export const ChatCommunitiesScreen = () => {
   const isMember = (community: Community) =>
     user ? community.members?.includes(user.uid) : false;
 
+  const isCommunityOwner = (community: Community) =>
+    !!user?.uid && community.creatorId === user.uid && !community.isDefault;
+
+  const joinedCommunities = useMemo(
+    () => filteredCommunities.filter((community) => isMember(community)),
+    [filteredCommunities, user?.uid]
+  );
+
+  const visibleCommunities = activeCommunityView === 'joined'
+    ? joinedCommunities
+    : filteredCommunities;
+
   const searchMessageRows = useMemo<SearchMessageRow[]>(() => {
     if (!trimmedSearchQuery) return [];
 
@@ -225,8 +246,8 @@ export const ChatCommunitiesScreen = () => {
   const visibleAccountRows = showAllAccountResults ? accountResults : accountResults.slice(0, 3);
 
   const handleCreateCommunity = async () => {
-    if (!user) { Alert.alert('Error', 'Please sign in to create a community.'); return; }
-    if (!newCommName.trim() || !newCommDesc.trim()) { Alert.alert('Error', 'Name and description are required.'); return; }
+    if (!user) { Alert.alert(t('Error'), t('Please sign in to create a community.')); return; }
+    if (!newCommName.trim() || !newCommDesc.trim()) { Alert.alert(t('Error'), t('Name and description are required.')); return; }
     
     setCreatingComm(true);
     try {
@@ -241,24 +262,93 @@ export const ChatCommunitiesScreen = () => {
       setNewCommEmoji('🌟');
       setShowCreateModal(false);
     } catch (e) {
-      Alert.alert('Error', 'Failed to create community.');
+      Alert.alert(t('Error'), t('Failed to create community.'));
     } finally {
       setCreatingComm(false);
     }
   };
 
+  const openCommunity = (community: Community) => {
+    navigation.navigate('CommunityChatRoom', {
+      communityId: community.id,
+      communityName: community.name,
+      communityEmoji: community.emoji,
+      membersCount: community.membersCount || 0,
+      isMember: isMember(community),
+    });
+  };
+
+  const handleJoinCommunity = async (community: Community) => {
+    if (!user?.uid) {
+      Alert.alert(t('Error'), t('Please sign in to join a community.'));
+      return;
+    }
+
+    try {
+      await joinCommunity(community.id, user.uid);
+    } catch (e) {
+      Alert.alert(t('Error'), t('Failed to join this community.'));
+    }
+  };
+
+  const handleLeaveCommunity = (community: Community) => {
+    if (!user?.uid) return;
+
+    Alert.alert(
+      t('Leave Community'),
+      `${t('Leave')} ${community.name}? ${t('It will be removed from your joined communities, but the public community will stay available for others.')}`,
+      [
+        { text: t('Cancel'), style: 'cancel' },
+        {
+          text: t('Leave'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await leaveCommunity(community.id, user.uid);
+            } catch (e) {
+              Alert.alert(t('Error'), t('Failed to leave this community.'));
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteCommunity = (community: Community) => {
+    if (!user?.uid) return;
+
+    Alert.alert(
+      t('Delete Community'),
+      `${t('Delete')} ${community.name} ${t('permanently? This removes it for everyone and deletes its community chat.')}`,
+      [
+        { text: t('Cancel'), style: 'cancel' },
+        {
+          text: t('Delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteCommunity(community.id, user.uid);
+            } catch (e) {
+              Alert.alert(t('Error'), t('Only the creator can delete this community.'));
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleDeleteConversation = (convo: DMConversation, friendName: string) => {
     if (!user) return;
-    Alert.alert('Delete Chat', `Delete your chat with ${friendName}? It will stay in their account.`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('Delete Chat'), `${t('Delete your chat with')} ${friendName}? ${t('It will stay in their account.')}`, [
+      { text: t('Cancel'), style: 'cancel' },
       {
-        text: 'Delete for Me',
+        text: t('Delete for Me'),
         style: 'destructive',
         onPress: async () => {
           try {
             await deleteAllDirectMessagesForUser(convo.chatId, user.uid);
           } catch {
-            Alert.alert('Error', 'Could not delete this chat.');
+            Alert.alert(t('Error'), t('Could not delete this chat.'));
           }
         },
       },
@@ -267,13 +357,13 @@ export const ChatCommunitiesScreen = () => {
 
   const handleDeleteSageChat = () => {
     if (!user) return;
-    Alert.alert('Delete Sage Chat', 'Delete your Sage chat history from this account?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('Delete Sage Chat'), t('Delete your Sage chat history from this account?'), [
+      { text: t('Cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('Delete'),
         style: 'destructive',
         onPress: () => AsyncStorage.removeItem(getSageChatStorageKey(user.uid)).catch(() => {
-          Alert.alert('Error', 'Could not delete Sage chat.');
+          Alert.alert(t('Error'), t('Could not delete Sage chat.'));
         }),
       },
     ]);
@@ -564,30 +654,68 @@ export const ChatCommunitiesScreen = () => {
               <Text style={[styles.createCommBtnText, { color: C.onPrimary }]}>Create New Community</Text>
             </TouchableOpacity>
 
+            <View style={[styles.communityViewTabs, { backgroundColor: C.surfaceContainerHigh }]}>
+              <TouchableOpacity
+                style={[
+                  styles.communityViewTab,
+                  activeCommunityView === 'joined' && { backgroundColor: C.primary },
+                ]}
+                onPress={() => setActiveCommunityView('joined')}
+                activeOpacity={0.85}
+              >
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={17}
+                  color={activeCommunityView === 'joined' ? C.onPrimary : C.onSurfaceVariant}
+                />
+                <Text
+                  style={[
+                    styles.communityViewTabText,
+                    { color: activeCommunityView === 'joined' ? C.onPrimary : C.onSurfaceVariant },
+                  ]}
+                >
+                  Joined
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.communityViewTab,
+                  activeCommunityView === 'explore' && { backgroundColor: C.primary },
+                ]}
+                onPress={() => setActiveCommunityView('explore')}
+                activeOpacity={0.85}
+              >
+                <Ionicons
+                  name="earth-outline"
+                  size={17}
+                  color={activeCommunityView === 'explore' ? C.onPrimary : C.onSurfaceVariant}
+                />
+                <Text
+                  style={[
+                    styles.communityViewTabText,
+                    { color: activeCommunityView === 'explore' ? C.onPrimary : C.onSurfaceVariant },
+                  ]}
+                >
+                  Explore
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {/* ── Communities List ── */}
-            {filteredCommunities.length > 0 ? (
-              filteredCommunities.map((community) => {
+            {visibleCommunities.length > 0 ? (
+              visibleCommunities.map((community) => {
                 const joined = isMember(community);
+                const owner = isCommunityOwner(community);
                 return (
-                  <TouchableOpacity
+                  <View
                     key={community.id}
-                    onPress={() =>
-                      navigation.navigate('CommunityChatRoom', {
-                        communityId: community.id,
-                        communityName: community.name,
-                        communityEmoji: community.emoji,
-                        membersCount: community.membersCount || 0,
-                        isMember: joined,
-                      })
-                    }
-                    activeOpacity={0.8}
+                    style={[
+                      styles.communityCard,
+                      { backgroundColor: C.surfaceContainerLowest, ...Shadow.subtle },
+                    ]}
                   >
-                    <View
-                      style={[
-                        styles.communityCard,
-                        { backgroundColor: C.surfaceContainerLowest, ...Shadow.subtle },
-                      ]}
-                    >
+                    <TouchableOpacity onPress={() => openCommunity(community)} activeOpacity={0.8}>
                       <View style={styles.communityRow}>
                         <View style={[styles.communityEmojiBg, { backgroundColor: C.primaryContainer }]}>
                           <Text style={{ fontSize: 24 }}>{community.emoji}</Text>
@@ -609,20 +737,70 @@ export const ChatCommunitiesScreen = () => {
                                 <Text style={[styles.joinedText, { color: C.primary }]}>Joined</Text>
                               </View>
                             )}
+                            {owner && (
+                              <View style={[styles.ownerBadge, { backgroundColor: `${C.tertiary}18` }]}>
+                                <Text style={[styles.ownerText, { color: C.tertiary }]}>Owner</Text>
+                              </View>
+                            )}
+                            {community.isDefault && (
+                              <View style={[styles.ownerBadge, { backgroundColor: `${C.secondary}18` }]}>
+                                <Text style={[styles.ownerText, { color: C.secondary }]}>Default</Text>
+                              </View>
+                            )}
                           </View>
                         </View>
                         <Ionicons name="chevron-forward" size={18} color={C.onSurfaceVariant} />
                       </View>
+                    </TouchableOpacity>
+
+                    <View style={styles.communityActions}>
+                      {joined ? (
+                        <TouchableOpacity
+                          style={[styles.communityActionBtn, { borderColor: C.error + '66' }]}
+                          onPress={() => handleLeaveCommunity(community)}
+                        >
+                          <Ionicons name="exit-outline" size={15} color={C.error} />
+                          <Text style={[styles.communityActionText, { color: C.error }]}>Leave</Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={[styles.communityActionBtn, { borderColor: C.primary + '66' }]}
+                          onPress={() => handleJoinCommunity(community)}
+                        >
+                          <Ionicons name="add-circle-outline" size={15} color={C.primary} />
+                          <Text style={[styles.communityActionText, { color: C.primary }]}>Join</Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {owner && (
+                        <TouchableOpacity
+                          style={[styles.communityActionBtn, { borderColor: C.error + '66' }]}
+                          onPress={() => handleDeleteCommunity(community)}
+                        >
+                          <Ionicons name="trash-outline" size={15} color={C.error} />
+                          <Text style={[styles.communityActionText, { color: C.error }]}>Delete</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
-                  </TouchableOpacity>
+                  </View>
                 );
               })
             ) : (
               <View style={[styles.emptySection, { backgroundColor: C.surfaceContainerLowest }]}>
-                <Ionicons name="search-outline" size={32} color={C.onSurfaceVariant} />
-                <Text style={[styles.emptyTitle, { color: C.onSurface }]}>No Results</Text>
+                <Ionicons
+                  name={searchQuery ? 'search-outline' : activeCommunityView === 'joined' ? 'people-outline' : 'earth-outline'}
+                  size={32}
+                  color={C.onSurfaceVariant}
+                />
+                <Text style={[styles.emptyTitle, { color: C.onSurface }]}>
+                  {searchQuery ? 'No Results' : activeCommunityView === 'joined' ? 'No Joined Communities' : 'No Communities Yet'}
+                </Text>
                 <Text style={[styles.emptyDesc, { color: C.onSurfaceVariant }]}>
-                  No communities match "{searchQuery}"
+                  {searchQuery
+                    ? `${t('No communities match')} "${searchQuery}"`
+                    : activeCommunityView === 'joined'
+                      ? 'Communities you create or join will appear here.'
+                      : 'Public communities will appear here for everyone to join.'}
                 </Text>
               </View>
             )}
@@ -933,6 +1111,26 @@ const styles = StyleSheet.create({
   createCommBtnText: {
     fontFamily: Typography.fontFamily.bold, fontSize: Typography.fontSize.md,
   },
+  communityViewTabs: {
+    flexDirection: 'row',
+    borderRadius: Radius.full,
+    padding: 4,
+    marginBottom: Spacing[2],
+    gap: 4,
+  },
+  communityViewTab: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: Radius.full,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  communityViewTabText: {
+    fontFamily: Typography.fontFamily.semiBold,
+    fontSize: Typography.fontSize.sm,
+  },
   modalHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     padding: Spacing[5], borderBottomWidth: 1,
@@ -993,6 +1191,37 @@ const styles = StyleSheet.create({
   joinedText: {
     fontFamily: Typography.fontFamily.semiBold,
     fontSize: 10,
+  },
+  ownerBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+    marginLeft: 4,
+  },
+  ownerText: {
+    fontFamily: Typography.fontFamily.semiBold,
+    fontSize: 10,
+  },
+  communityActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing[2],
+    marginTop: Spacing[3],
+    paddingLeft: 64,
+  },
+  communityActionBtn: {
+    minHeight: 32,
+    borderWidth: 1,
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing[3],
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  communityActionText: {
+    fontFamily: Typography.fontFamily.semiBold,
+    fontSize: Typography.fontSize.xs,
   },
 
   // CTA

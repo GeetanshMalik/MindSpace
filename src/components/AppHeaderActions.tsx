@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
-  Dimensions,
   Image,
   Modal,
   Pressable,
   StyleProp,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
   View,
   ViewStyle,
 } from 'react-native';
@@ -22,8 +22,7 @@ import { subscribeToUnreadNotificationsCount } from '../services/firebase/firest
 import { getProfileDisplayName, getProfilePhotoURL } from '../types/profile';
 import { Avatar } from './Avatar';
 import { AccountSearchModal } from './AccountSearchModal';
-import { signOut } from 'firebase/auth';
-import { auth } from '../services/firebase/config';
+import { logout } from '../services/firebase/auth';
 import { useTranslation } from '../i18n/useTranslation';
 
 interface AppHeaderActionsProps {
@@ -44,6 +43,7 @@ export const AppHeaderActions: React.FC<AppHeaderActionsProps> = ({
   showSearch = false,
 }) => {
   const navigation = useNavigation<any>();
+  const { width: screenWidth } = useWindowDimensions();
   const C = useColors();
   const { t } = useTranslation();
   const { user, profile } = useAuthStore();
@@ -125,7 +125,7 @@ export const AppHeaderActions: React.FC<AppHeaderActionsProps> = ({
           {
             text: t('Sign Out'),
             style: 'destructive',
-            onPress: () => signOut(auth),
+            onPress: () => logout(),
           },
         ],
       );
@@ -137,8 +137,6 @@ export const AppHeaderActions: React.FC<AppHeaderActionsProps> = ({
     { icon: 'person-outline' as const, label: t('Open Profile'), onPress: handleOpenProfile },
     { icon: 'log-out-outline' as const, label: t('Logout'), onPress: handleLogout, danger: true },
   ];
-
-  const screenWidth = Dimensions.get('window').width;
 
   return (
     <View style={[styles.container, containerStyle]}>

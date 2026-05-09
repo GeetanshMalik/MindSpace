@@ -11,6 +11,7 @@ import { sendToAI, AIMessage } from '../../services/ai/aiService';
 import { AI_CONFIG } from '../../services/ai/aiConfig';
 import { useAuthStore } from '../../store/authStore';
 import { getSageChatStorageKey, LEGACY_SAGE_CHAT_STORAGE_KEY } from '../../services/ai/sageStorage';
+import { useTranslation } from '../../i18n/useTranslation';
 
 const SAGE_AVATAR = require('../../../assets/logo_sage.png');
 
@@ -24,6 +25,7 @@ interface DisplayMessage {
 export const AIChatScreen = () => {
   const navigation = useNavigation<any>();
   const C = useColors();
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const flatListRef = useRef<FlatList>(null);
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -111,10 +113,10 @@ export const AIChatScreen = () => {
   }, [input, messages, isTyping]);
 
   const handleClearChat = useCallback(() => {
-    Alert.alert('Delete Sage Chat', 'Delete your Sage chat history from this account?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('Delete Sage Chat'), t('Delete your Sage chat history from this account?'), [
+      { text: t('Cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('Delete'),
         style: 'destructive',
         onPress: () => {
           setMessages([]);
@@ -122,12 +124,21 @@ export const AIChatScreen = () => {
         },
       },
     ]);
-  }, [storageKey]);
+  }, [storageKey, t]);
 
   const handleDeleteSelectedMessage = () => {
     if (!selectedMessage) return;
-    setMessages((prev) => prev.filter((message) => message.id !== selectedMessage.id));
-    setSelectedMessage(null);
+    Alert.alert(t('Delete Message'), t('Choose how to delete this message.'), [
+      { text: t('Cancel'), style: 'cancel' },
+      {
+        text: t('Delete'),
+        style: 'destructive',
+        onPress: () => {
+          setMessages((prev) => prev.filter((message) => message.id !== selectedMessage.id));
+          setSelectedMessage(null);
+        },
+      },
+    ]);
   };
 
   const formatTime = (ts: number) => {

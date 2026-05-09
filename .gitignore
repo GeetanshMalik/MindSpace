@@ -47,3 +47,35 @@ GoogleService-Info.plist
 firebase-debug.log
 firestore-debug.log
 ui-debug.log
+
+# Sensitive config files with API keys (DO NOT COMMIT)
+src/services/ai/aiConfig.ts
+src/services/firebase/config.ts
+src/services/supabase/config.ts
+src/services/cloudinary/config.ts
+
+# Netlify (DO NOT COMMIT)
+netlify.toml
+NETLIFY_SETUP.md
+netlify/
+.netlify/
+
+# Unnecessary guide/setup files
+*_SETUP.md
+*_GUIDE.md
+MIGRATION_*.md
+COMPLETE_*.md
+FIXES_*.md
+setup-*.md
+use-*.md
+
+# Temporary/debug files
+tsc_output*.txt
+temp_*.txt
+*.log
+check-firebase.ts
+
+# Unnecessary scripts
+add_errors.js
+fix_comma.js
+script.js

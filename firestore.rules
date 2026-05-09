@@ -1,8 +1,262 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && uid() == userId;
+    }
+
+    function changedOnly(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    function isPostAuthor(postId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/posts/$(postId)).data.authorId == uid();
+    }
+
+    function communityDoc(communityId) {
+      return get(/databases/$(database)/documents/communities/$(communityId));
+    }
+
+    function isCommunityMember(communityId) {
+      return isSignedIn()
+        && communityDoc(communityId).data.members.hasAny([uid()]);
+    }
+
+    function isCommunityCreator(communityId) {
+      return isSignedIn()
+        && communityDoc(communityId).data.creatorId == uid()
+        && communityDoc(communityId).data.isDefault != true;
+    }
+
+    function isSelfCommunityJoin() {
+      return !resource.data.members.hasAny([uid()])
+        && request.resource.data.members.hasAll(resource.data.members)
+        && request.resource.data.members.hasAny([uid()])
+        && request.resource.data.members.size() == resource.data.members.size() + 1
+        && request.resource.data.membersCount == request.resource.data.members.size();
+    }
+
+    function isSelfCommunityLeave() {
+      return resource.data.members.hasAny([uid()])
+        && !request.resource.data.members.hasAny([uid()])
+        && resource.data.members.hasAll(request.resource.data.members)
+        && request.resource.data.members.size() == resource.data.members.size() - 1
+        && request.resource.data.membersCount == request.resource.data.members.size();
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId)
+        && request.resource.data.uid == userId;
+      allow update, delete: if isOwner(userId);
+
+      match /settings/{settingId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /reflections/{reflectionId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /stats/{statId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /private/{privateId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    match /pushTokenOwners/{tokenId} {
+      allow read: if isSignedIn() && resource.data.userId == uid();
+      allow create, update: if isSignedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.token is string;
+      allow delete: if isSignedIn() && resource.data.userId == uid();
+    }
+
+    match /notifications/{userId}/items/{notificationId} {
+      allow read: if isOwner(userId);
+      allow create: if isSignedIn()
+        && request.resource.data.fromUserId == uid();
+      allow update: if isOwner(userId)
+        && changedOnly(['read', 'seenInBell']);
+      allow delete: if isOwner(userId);
+    }
+
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.authorId == uid();
+      allow update: if isSignedIn()
+        && (
+          (
+            resource.data.authorId == uid()
+            && request.resource.data.authorId == resource.data.authorId
+            && changedOnly([
+              'content',
+              'category',
+              'imageUrl',
+              'tags',
+              'hidden',
+              'authorName',
+              'authorPhotoURL',
+              'updatedAt'
+            ])
+          )
+          || changedOnly(['likes', 'likesCount', 'engagementScore'])
+          || changedOnly(['solidarity', 'solidarityCount', 'engagementScore'])
+          || changedOnly(['hiddenBy'])
+          || changedOnly(['commentsCount'])
+        );
+      allow delete: if isSignedIn()
+        && resource.data.authorId == uid();
+
+      match /comments/{commentId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn()
+          && request.resource.data.authorId == uid();
+        allow update: if isSignedIn()
+          && resource.data.authorId == uid()
+          && changedOnly(['authorName', 'authorPhotoURL']);
+        allow delete: if isSignedIn()
+          && (resource.data.authorId == uid() || isPostAuthor(postId));
+      }
+    }
+
+    match /{path=**}/comments/{commentId} {
+      allow read: if isSignedIn()
+        && resource.data.authorId == uid();
+      allow update: if isSignedIn()
+        && resource.data.authorId == uid()
+        && changedOnly(['authorName', 'authorPhotoURL']);
+    }
+
+    match /stories/{storyId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.authorId == uid();
+      allow update: if isSignedIn()
+        && (
+          changedOnly(['viewedBy'])
+          || (
+            resource.data.authorId == uid()
+            && changedOnly(['authorName', 'authorPhotoURL'])
+          )
+        );
+      allow delete: if isSignedIn()
+        && resource.data.authorId == uid();
+    }
+
+    match /friendships/{friendshipId} {
+      allow read: if isSignedIn()
+        && (resource.data.requesterId == uid() || resource.data.receiverId == uid());
+      allow create: if isSignedIn()
+        && request.resource.data.requesterId == uid()
+        && request.resource.data.receiverId != uid()
+        && request.resource.data.status == 'pending';
+      allow update: if isSignedIn()
+        && resource.data.receiverId == uid()
+        && changedOnly(['status'])
+        && request.resource.data.status == 'accepted';
+      allow delete: if isSignedIn()
+        && (resource.data.requesterId == uid() || resource.data.receiverId == uid());
+    }
+
+    match /direct_messages/{messageId} {
+      allow read: if isSignedIn()
+        && (resource.data.senderId == uid() || resource.data.receiverId == uid());
+      allow create: if isSignedIn()
+        && request.resource.data.senderId == uid();
+      allow update: if isSignedIn()
+        && (resource.data.senderId == uid() || resource.data.receiverId == uid())
+        && changedOnly(['deletedFor']);
+      allow delete: if isSignedIn()
+        && resource.data.senderId == uid();
+    }
+
+    match /communities/{communityId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && (
+          (
+            request.resource.data.creatorId == uid()
+            && request.resource.data.isDefault == false
+            && request.resource.data.members.hasAny([uid()])
+          )
+          || (
+            request.resource.data.creatorId == null
+            && request.resource.data.isDefault == true
+          )
+        );
+      allow update: if isSignedIn()
+        && (
+          (
+            changedOnly(['members', 'membersCount'])
+            && (isSelfCommunityJoin() || isSelfCommunityLeave())
+          )
+          || (
+            (resource.data.isDefault == true
+              || (request.resource.data.isDefault == true && request.resource.data.creatorId == null))
+            && changedOnly(['name', 'description', 'emoji', 'category', 'creatorId', 'isDefault'])
+          )
+          || (
+            resource.data.creatorId == uid()
+            && changedOnly(['name', 'description', 'emoji', 'category'])
+          )
+        );
+      allow delete: if isSignedIn()
+        && resource.data.creatorId == uid()
+        && resource.data.isDefault != true;
+
+      match /messages/{messageId} {
+        allow read: if isCommunityMember(communityId);
+        allow create: if isCommunityMember(communityId)
+          && request.resource.data.senderId == uid();
+        allow update: if isCommunityMember(communityId)
+          && (
+            changedOnly(['deletedFor'])
+            || (
+              resource.data.senderId == uid()
+              && changedOnly(['senderName', 'senderPhotoURL'])
+            )
+          );
+        allow delete: if isSignedIn()
+          && (resource.data.senderId == uid() || isCommunityCreator(communityId));
+      }
+    }
+
+    match /{path=**}/messages/{messageId} {
+      allow read: if isSignedIn()
+        && resource.data.senderId == uid();
+      allow update: if isSignedIn()
+        && resource.data.senderId == uid()
+        && changedOnly(['senderName', 'senderPhotoURL']);
+    }
+
+    match /chats/{roomId}/messages/{messageId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.senderId == uid();
+      allow update: if isSignedIn()
+        && resource.data.senderId == uid()
+        && changedOnly(['senderName', 'senderPhotoURL']);
+      allow delete: if isSignedIn()
+        && resource.data.senderId == uid();
+    }
+
+    match /feedback/{feedbackId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if false;
     }
   }
 }

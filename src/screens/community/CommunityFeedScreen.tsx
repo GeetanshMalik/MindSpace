@@ -8,7 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Spacing, Typography, Radius } from '../../theme';
 import { useColors } from '../../theme/useColors';
-import { Avatar } from '../../components/Avatar';
+import { ProfileAvatar, ProfileName } from '../../components/ProfileAvatar';
 import { AppHeaderActions } from '../../components/AppHeaderActions';
 import { useAuthStore } from '../../store/authStore';
 import { getFeedCacheKey, usePostStore } from '../../store/postStore';
@@ -485,7 +485,7 @@ const CommentSheet: React.FC<CommentSheetProps> = ({
           }}
           renderItem={({ item }) => (
             <View style={cmStyles.commentRow}>
-              <Avatar name={item.authorName} uri={item.authorPhotoURL || undefined} size={32} />
+              <ProfileAvatar userId={item.authorId} name={item.authorName} uri={item.authorPhotoURL} size={32} />
               <View
                 style={[
                   cmStyles.commentBubble,
@@ -493,7 +493,7 @@ const CommentSheet: React.FC<CommentSheetProps> = ({
                 ]}
               >
                 <View style={cmStyles.commentTopRow}>
-                  <Text translate={false} style={[cmStyles.commentAuthor, { color: C.primary }]}>{item.authorName}</Text>
+                  <ProfileName userId={item.authorId} fallbackName={item.authorName} style={[cmStyles.commentAuthor, { color: C.primary }]} />
                   {canDeleteComment(item) ? (
                     <TouchableOpacity onPress={() => handleDeleteComment(item)} hitSlop={8} activeOpacity={0.65}>
                       <Ionicons name="trash-outline" size={15} color={C.error} />
@@ -1125,16 +1125,19 @@ export const CommunityFeedScreen = () => {
             onPress={() => handleProfileTap(item)}
             activeOpacity={item.isVentMode ? 1 : 0.7}
           >
-            <Avatar
+            <ProfileAvatar
+              userId={!item.isVentMode ? item.authorId : undefined}
               name={item.isVentMode ? '?' : item.authorName}
               uri={!item.isVentMode ? (item.authorPhotoURL || (user && item.authorId === user.uid ? currentPhotoURL : undefined)) : undefined}
               size={38}
             />
             <View style={styles.postMeta}>
               <View style={styles.postNameRow}>
-                <Text translate={false} style={[styles.postAuthor, { color: C.onSurface }]}>
-                  {item.isVentMode ? 'Anonymous' : item.authorName}
-                </Text>
+                {item.isVentMode ? (
+                  <Text translate={false} style={[styles.postAuthor, { color: C.onSurface }]}>Anonymous</Text>
+                ) : (
+                  <ProfileName userId={item.authorId} fallbackName={item.authorName} style={[styles.postAuthor, { color: C.onSurface }]} />
+                )}
                 {item.isVentMode && (
                   <View style={styles.ventBadge}><Text style={styles.ventBadgeText}>VENT</Text></View>
                 )}
@@ -1333,7 +1336,7 @@ export const CommunityFeedScreen = () => {
 
           <ScrollView style={{ flex: 1, padding: Spacing[5] }} keyboardShouldPersistTaps="handled">
             <View style={{ flexDirection: 'row', gap: Spacing[3], marginBottom: Spacing[5] }}>
-              <Avatar name={currentDisplayName || '?'} uri={currentPhotoURL} size={40} />
+              <ProfileAvatar userId={user?.uid} name={currentDisplayName || '?'} uri={currentPhotoURL} size={40} />
               <TextInput
                 style={[styles.createInput, { color: C.onSurface }]}
                 placeholder="Share your thoughts with the community..."
@@ -1515,7 +1518,7 @@ export const CommunityFeedScreen = () => {
             <TouchableOpacity activeOpacity={0.9} onPress={() => setShowCreatePost(true)}>
               <View style={[styles.createBox, { backgroundColor: C.surfaceContainerLow }]}>
                 <View style={styles.createBoxTop}>
-                  <Avatar name={currentDisplayName || '?'} uri={currentPhotoURL} size={36} />
+                  <ProfileAvatar userId={user?.uid} name={currentDisplayName || '?'} uri={currentPhotoURL} size={36} />
                   <Text style={[styles.createPlaceholder, { color: C.onSurfaceVariant }]}>Share your thoughts...</Text>
                 </View>
                 <View style={[styles.createBoxBottom, { borderTopColor: C.outlineVariant + '33' }]}>

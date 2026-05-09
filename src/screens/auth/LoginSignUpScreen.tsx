@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import { Text } from '../../components/TranslatedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -8,6 +8,8 @@ import { Input } from '../../components/Input';
 import { Spacing, Typography, Radius } from '../../theme';
 import { useColors } from '../../theme/useColors';
 import { signIn, signUp } from '../../services/firebase/auth';
+
+const APP_LOGO = require('../../../assets/icon-sq.png');
 
 export const LoginSignUpScreen = () => {
   const C = useColors();
@@ -76,8 +78,8 @@ export const LoginSignUpScreen = () => {
         >
           {/* ── Hero ── */}
           <View style={styles.hero}>
-            <View style={[styles.logoBadge, { backgroundColor: C.primaryContainer }]}>
-              <Text style={styles.logoEmoji}>🌿</Text>
+            <View style={styles.logoWrap}>
+              <Image source={APP_LOGO} style={styles.logoImage} resizeMode="contain" />
             </View>
             <Text style={[styles.appName, { color: C.onSurface }]}>Mindspace</Text>
             <Text style={[styles.tagline, { color: C.onSurfaceVariant }]}>Your breathable sanctuary for mental wellness</Text>
@@ -184,11 +186,20 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   hero: { alignItems: 'center', gap: Spacing[2] },
-  logoBadge: {
-    width: 72, height: 72, borderRadius: Radius.full,
-    justifyContent: 'center', alignItems: 'center', marginBottom: Spacing[1],
+  logoWrap: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing[1],
+    overflow: 'hidden',
   },
-  logoEmoji: { fontSize: 36 },
+  logoImage: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+  },
   appName: {
     fontFamily: Typography.fontFamily.extraBold,
     fontSize: Typography.fontSize['3xl'],
@@ -214,7 +225,15 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.md,
   },
   form: { gap: Spacing[4] },
-  eyeBtn: { position: 'absolute', right: Spacing[4], top: 38 },
+  eyeBtn: {
+    position: 'absolute',
+    right: Spacing[3],
+    top: 43,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   submitBtn: {
     flexDirection: 'row',
     alignItems: 'center',

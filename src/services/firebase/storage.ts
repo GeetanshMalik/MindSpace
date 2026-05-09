@@ -52,7 +52,7 @@ export const uploadMedia = async (
     
     // Determine resource type and MIME type
     const extension = getExtensionFromUri(uri);
-    let resourceType: 'image' | 'video' | 'raw' = 'image';
+    let resourceType: string = 'image';
     let mimeType = 'image/jpeg';
     
     if (mediaType === 'video') {
@@ -62,8 +62,8 @@ export const uploadMedia = async (
       resourceType = 'video'; // Cloudinary uses 'video' for audio
       mimeType = 'audio/mpeg';
     } else if (mediaType === 'document') {
-      resourceType = 'raw';
-      mimeType = 'application/pdf';
+      resourceType = 'auto';
+      mimeType = getDocMimeType(extension);
     }
     
     // Prepare file for upload
@@ -129,4 +129,25 @@ export const getMediaPath = (
 export const getExtensionFromUri = (uri: string): string => {
   const match = uri.match(/\.(\w+)(\?.*)?$/);
   return match ? match[1].toLowerCase() : 'jpg';
+};
+
+/**
+ * Get MIME type from file extension for document uploads.
+ */
+const getDocMimeType = (ext: string): string => {
+  const map: Record<string, string> = {
+    pdf: 'application/pdf',
+    doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xls: 'application/vnd.ms-excel',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ppt: 'application/vnd.ms-powerpoint',
+    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    txt: 'text/plain',
+    csv: 'text/csv',
+    json: 'application/json',
+    zip: 'application/zip',
+    rar: 'application/x-rar-compressed',
+  };
+  return map[ext] || 'application/octet-stream';
 };

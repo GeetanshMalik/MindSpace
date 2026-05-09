@@ -12,8 +12,11 @@ export interface UserProfile {
   photoURL?: string | null;
   avatarUrl?: string | null;
   pushToken?: string;
+  pushTokens?: string[];
   createdAt?: any;
   updatedAt?: any;
+  lastAppOpenAt?: any;
+  welcomeGreetingSeenAt?: any;
 }
 
 export const DEFAULT_PROFILE_HEADLINE = 'Mindfulness Enthusiast & Community Member';

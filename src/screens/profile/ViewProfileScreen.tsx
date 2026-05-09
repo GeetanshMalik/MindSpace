@@ -55,12 +55,15 @@ export const ViewProfileScreen = () => {
   const profilePhotoURL = getProfilePhotoURL(viewedProfile);
   const profileHeadline = getProfileHeadline(viewedProfile);
   const profileAbout = getProfileAbout(viewedProfile);
+  const isSelf = currentUser?.uid === userId;
+  const canViewPrivate = isSelf || friendship?.status === 'accepted';
+
   const profileDetails = [
-    viewedProfile?.email ? { icon: 'mail-outline', label: viewedProfile.email } : null,
-    viewedProfile?.location ? { icon: 'location-outline', label: viewedProfile.location } : null,
-    viewedProfile?.dateOfBirth ? { icon: 'calendar-outline', label: formatDateOfBirth(viewedProfile.dateOfBirth) } : null,
-    viewedProfile?.phoneNumber ? { icon: 'call-outline', label: viewedProfile.phoneNumber } : null,
-    viewedProfile?.pronouns ? { icon: 'person-outline', label: viewedProfile.pronouns } : null,
+    canViewPrivate && viewedProfile?.email ? { icon: 'mail-outline', label: viewedProfile.email } : null,
+    canViewPrivate && viewedProfile?.location ? { icon: 'location-outline', label: viewedProfile.location } : null,
+    canViewPrivate && viewedProfile?.dateOfBirth ? { icon: 'calendar-outline', label: formatDateOfBirth(viewedProfile.dateOfBirth) } : null,
+    canViewPrivate && viewedProfile?.phoneNumber ? { icon: 'call-outline', label: viewedProfile.phoneNumber } : null,
+    viewedProfile?.pronouns ? { icon: 'person-outline', label: viewedProfile.pronouns } : null, // Pronouns can be public
   ].filter(Boolean) as { icon: string; label: string }[];
 
   useEffect(() => {

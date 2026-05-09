@@ -7,8 +7,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, Typography, Radius, Shadow } from '../../theme';
 import { useColors } from '../../theme/useColors';
 import { useThemeStore } from '../../store/themeStore';
-import { auth } from '../../services/firebase/config';
-import { EmailAuthProvider, reauthenticateWithCredential, signOut, updatePassword } from 'firebase/auth';
+import { auth, db } from '../../services/firebase/config';
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from 'firebase/auth';
+import { logout } from '../../services/firebase/auth';
+import { doc, deleteDoc } from 'firebase/firestore';
 
 import { cancelStreakNotifications, setupStreakNotifications } from '../../store/streakStore';
 import { getLanguageLabel, LANGUAGE_OPTIONS, translateText } from '../../i18n';
@@ -174,7 +176,7 @@ export const SettingsScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await signOut(auth);
+              await logout();
             } catch (e) {
               console.warn('Logout error:', e);
             }
@@ -195,8 +197,29 @@ export const SettingsScreen = () => {
         {
           text: t('Delete Account'),
           style: 'destructive',
-          onPress: () => {
-            Alert.alert(t('Account Deletion'), t('Please contact support@mindspace.app to complete account deletion.'));
+          onPress: async () => {
+            const currentUser = auth.currentUser;
+            if (!currentUser) return;
+            try {
+              // Delete user profile document from Firestore
+              await deleteDoc(doc(db, 'users', currentUser.uid));
+              // Delete authentication record
+              await deleteUser(currentUser);
+              Alert.alert(t('Account Deleted'), t('Your account has been successfully deleted.'));
+            } catch (error: any) {
+              if (error?.code === 'auth/requires-recent-login') {
+                Alert.alert(
+                  t('Re-authentication Required'),
+                  t('Please log out and log back in to verify your identity before deleting your account.'),
+                  [
+                    { text: t('Cancel'), style: 'cancel' },
+                    { text: t('Sign Out'), onPress: () => logout().catch(() => {}) },
+                  ]
+                );
+              } else {
+                Alert.alert(t('Error'), error?.message || t('Could not delete account. Please try again later.'));
+              }
+            }
           },
         },
       ],

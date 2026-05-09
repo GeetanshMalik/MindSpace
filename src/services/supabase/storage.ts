@@ -10,22 +10,27 @@ import { supabase } from './config';
 export const uploadToSupabase = async (
   fileUri: string,
   userId: string,
-  mimeType: string = 'application/pdf'
+  mimeType: string = 'application/pdf',
+  originalFileName?: string
 ): Promise<string> => {
   try {
-    // Generate unique filename
-    const extension = mimeType.split('/')[1] || 'pdf';
-    const filename = `${userId}/${Date.now()}.${extension}`;
+    const extension = getExtension(originalFileName, mimeType);
+    const safeOriginalName = sanitizeFileName(originalFileName || `document.${extension}`);
+    const filename = `${userId}/${Date.now()}_${safeOriginalName}`;
     
-    // Convert URI to blob
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
+    // In React Native, fetch(fileUri).blob() often fails with local files.
+    // We must use FormData which works correctly with the native networking layer.
+    const formData = new FormData();
+    formData.append('file', {
+      uri: fileUri,
+      name: safeOriginalName,
+      type: mimeType,
+    } as any);
     
     // Upload to Supabase
     const { data, error } = await supabase.storage
       .from('mindspace-files')
-      .upload(filename, blob, {
-        contentType: mimeType,
+      .upload(filename, formData, {
         cacheControl: '3600',
         upsert: false,
       });
@@ -60,9 +65,10 @@ export const uploadPDFToSupabase = async (
 export const uploadDocumentToSupabase = async (
   fileUri: string,
   userId: string,
-  mimeType: string
+  mimeType: string,
+  originalFileName?: string
 ): Promise<string> => {
-  return uploadToSupabase(fileUri, userId, mimeType);
+  return uploadToSupabase(fileUri, userId, mimeType, originalFileName);
 };
 
 /**
@@ -106,4 +112,31 @@ export const listUserFiles = async (userId: string): Promise<any[]> => {
     console.error('Error listing files:', error);
     throw error;
   }
+};
+
+const getExtension = (fileName?: string, mimeType?: string): string => {
+  const fileExt = fileName?.split('.').pop()?.toLowerCase();
+  if (fileExt && fileExt !== fileName?.toLowerCase()) return fileExt;
+
+  const map: Record<string, string> = {
+    'application/pdf': 'pdf',
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/vnd.ms-excel': 'xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+    'application/vnd.ms-powerpoint': 'ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+    'text/plain': 'txt',
+    'text/csv': 'csv',
+    'application/json': 'json',
+    'application/zip': 'zip',
+  };
+
+  return map[mimeType || ''] || 'pdf';
+};
+
+const sanitizeFileName = (name: string): string => {
+  const trimmed = name.trim() || 'document.pdf';
+  const withoutUnsafeChars = trimmed.replace(/[\\/:*?"<>|#%{}^~[\]`]/g, '_');
+  return withoutUnsafeChars.includes('.') ? withoutUnsafeChars : `${withoutUnsafeChars}.pdf`;
 };

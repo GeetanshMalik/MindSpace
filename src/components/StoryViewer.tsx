@@ -1,16 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Modal, Image, Dimensions, Animated, Pressable, ActivityIndicator, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, StyleSheet, Modal, Image, Animated, Pressable, ActivityIndicator, TouchableOpacity, FlatList, Alert, useWindowDimensions } from 'react-native';
 import { Text } from './TranslatedText';
 import { Ionicons } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { Typography } from '../theme';
-import { Avatar } from './Avatar';
+import { ProfileAvatar, ProfileName } from './ProfileAvatar';
 import type { Story } from '../services/firebase/firestore';
 import { deleteStory, markStoryViewed, getUserProfileById } from '../services/firebase/firestore';
 import { getProfileDisplayName, getProfilePhotoURL } from '../types/profile';
 import { useThemeStore } from '../store/themeStore';
-
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
 // ─── Shared Constants ─────────────────────────────────────────────
 export const STORY_BG_COLORS = [
@@ -245,6 +243,7 @@ type ViewerProfile = {
 };
 
 export const StoryViewer: React.FC<StoryViewerProps> = ({ storyGroup, onClose, currentUserId, onStoryViewed }) => {
+  const { width, height } = useWindowDimensions();
   const lowStimulation = useThemeStore((state) => state.lowStimulation);
   const total = storyGroup.stories.length;
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -534,8 +533,8 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ storyGroup, onClose, c
 
           {/* ─ Author row ─ */}
           <View style={vs.authorRow}>
-            <Avatar name={storyGroup.authorName} uri={storyGroup.authorPhotoURL || undefined} size={32} />
-            <Text translate={false} style={vs.authorName}>{storyGroup.authorName}</Text>
+            <ProfileAvatar userId={storyGroup.authorId} name={storyGroup.authorName} uri={storyGroup.authorPhotoURL} size={32} />
+            <ProfileName userId={storyGroup.authorId} fallbackName={storyGroup.authorName} style={vs.authorName} />
             <Text style={vs.timeText}>
               {story.createdAt?.toDate ? timeAgo(story.createdAt.toDate()) : 'now'}
             </Text>
@@ -555,13 +554,17 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ storyGroup, onClose, c
               <Text translate={false} style={vs.storyText}>{story.textContent}</Text>
             )}
             {story.type === 'image' && story.mediaUri && (
-              <Image source={{ uri: story.mediaUri }} style={vs.storyMedia} resizeMode="contain" />
+              <Image
+                source={{ uri: story.mediaUri }}
+                style={[vs.storyMedia, { width: width - 32, height: height * 0.65 }]}
+                resizeMode="contain"
+              />
             )}
             {story.type === 'video' && story.mediaUri && (
               <StoryVideoPlayer
                 key={`vid-${currentIndex}`}
                 uri={story.mediaUri}
-                style={vs.storyMedia}
+                style={[vs.storyMedia, { width: width - 32, height: height * 0.65 }]}
                 paused={isPaused}
                 onReady={handleVideoReady}
                 onProgress={handleVideoProgress}
@@ -623,8 +626,8 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({ storyGroup, onClose, c
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <View style={vs.viewerRow}>
-                    <Avatar name={item.name} uri={item.photoURL} size={36} />
-                    <Text translate={false} style={vs.viewerName}>{item.name}</Text>
+                    <ProfileAvatar userId={item.id} name={item.name} uri={item.photoURL} size={36} />
+                    <ProfileName userId={item.id} fallbackName={item.name} style={vs.viewerName} />
                   </View>
                 )}
                 style={{ maxHeight: 300 }}
@@ -677,7 +680,7 @@ const vs = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.3)',
     textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8,
   },
-  storyMedia: { width: SCREEN_W - 32, height: SCREEN_H * 0.65, borderRadius: 12 },
+  storyMedia: { borderRadius: 12 },
   captionBar: {
     position: 'absolute', bottom: 60, left: 0, right: 0,
     backgroundColor: 'rgba(0,0,0,0.5)', paddingVertical: 16, paddingHorizontal: 24,

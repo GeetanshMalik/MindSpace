@@ -35,7 +35,6 @@ export const initDatabase = () => {
   }
 };
 
-// Mood Logs
 export const saveMoodLog = (moodScore: number, emoji: string, note: string, date: string) => {
   getDb().runSync(
     'INSERT INTO mood_logs (date, mood_score, emoji, note) VALUES (?, ?, ?, ?)',
@@ -51,7 +50,6 @@ export const getTodayMood = (date: string): any => {
   return getDb().getFirstSync('SELECT * FROM mood_logs WHERE date = ? LIMIT 1', [date]);
 };
 
-// Reflections
 export const saveReflection = (title: string, body: string, tags: string) => {
   getDb().runSync(
     'INSERT INTO reflections (title, body, tags) VALUES (?, ?, ?)',

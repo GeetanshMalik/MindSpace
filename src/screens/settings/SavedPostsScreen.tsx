@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Spacing, Typography, Radius } from '../../theme';
 import { useColors } from '../../theme/useColors';
-import { Avatar } from '../../components/Avatar';
+import { ProfileAvatar, ProfileName } from '../../components/ProfileAvatar';
 import { usePostStore } from '../../store/postStore';
 import { Post, getPostsByIds } from '../../services/firebase/firestore';
 
@@ -62,9 +62,9 @@ export const SavedPostsScreen = () => {
           <View style={[styles.card, { backgroundColor: C.surfaceContainerLow }]}>
             <TouchableOpacity activeOpacity={0.82} onPress={() => openPost(item)} style={styles.postTapArea}>
               <View style={styles.row}>
-                <Avatar name={item.authorName} uri={item.authorPhotoURL || undefined} size={36} />
+                <ProfileAvatar userId={item.authorId} name={item.authorName} uri={item.authorPhotoURL} size={36} />
                 <View style={styles.meta}>
-                  <Text translate={false} style={[styles.author, { color: C.onSurface }]}>{item.authorName}</Text>
+                  <ProfileName userId={item.authorId} fallbackName={item.authorName} style={[styles.author, { color: C.onSurface }]} />
                   <Text style={[styles.time, { color: C.onSurfaceVariant }]}>
                     {item.createdAt?.toDate ? timeAgo(item.createdAt.toDate()) : ''}
                   </Text>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert, Linking, Animated, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, Image, useWindowDimensions } from 'react-native';
 import { Text } from '../../components/TranslatedText';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { Colors, Spacing, Typography, Radius, Shadow } from '../../theme';
 import { useColors } from '../../theme/useColors';
 import { AppHeaderActions } from '../../components/AppHeaderActions';
 import { Card } from '../../components/Card';
+import { CrisisSupportModal } from '../../components/CrisisSupportModal';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 import { getFeedCacheKey, usePostStore } from '../../store/postStore';
@@ -21,7 +22,6 @@ import { useTranslation } from '../../i18n/useTranslation';
 const APP_LOGO = require('../../../assets/logo.png');
 
 type NavProp = StackNavigationProp<HomeStackParamList, 'Home'>;
-const { width } = Dimensions.get('window');
 
 // ─── 50 Curated Mental Wellness Quotes ────────────────────────────────
 const QUOTES: { text: string; author: string }[] = [
@@ -110,6 +110,7 @@ const QUICK_RESOURCES = [
 
 export const HomeScreen = () => {
   const navigation = useNavigation<NavProp>();
+  const { width } = useWindowDimensions();
   const { user } = useAuthStore();
   const C = useColors();
   const { locale, t } = useTranslation();
@@ -119,6 +120,7 @@ export const HomeScreen = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [reflections, setReflections] = useState<Reflection[]>([]);
   const [quoteIndex, setQuoteIndex] = useState(() => Math.floor(Math.random() * QUOTES.length));
+  const [showCrisisSupport, setShowCrisisSupport] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const graphAnim = useRef(new Animated.Value(0)).current;
 
@@ -129,6 +131,10 @@ export const HomeScreen = () => {
   }, [reflections]);
   const weeklyMood = useMemo(() => buildMoodWeek(reflections), [reflections]);
   const weekRange = useMemo(() => formatMoodWeekRange(weeklyMood, locale), [locale, weeklyMood]);
+  const resourceCardWidth = useMemo(
+    () => (width - Spacing[5] * 2 - Spacing[3]) / 2,
+    [width]
+  );
 
   // Subscribe to real communities
   useEffect(() => {
@@ -231,16 +237,7 @@ export const HomeScreen = () => {
         navigation.navigate('ExpertArticles');
         break;
       case 'crisis':
-        Alert.alert(
-          t('🆘 Crisis Resources'),
-          t('If you or someone you know is in immediate danger, please contact:')
-          + '\n\n• KIRAN Helpline: 1800-599-0019\n• Vandrevala Foundation: 1860-2662-345\n• iCall: 9152987821\n\n'
-          + t('You are not alone. Help is always available.'),
-          [
-            { text: t('Call KIRAN Now'), onPress: () => Linking.openURL('tel:18005990019') },
-            { text: t('Close'), style: 'cancel' },
-          ]
-        );
+        setShowCrisisSupport(true);
         break;
     }
   };
@@ -456,7 +453,7 @@ export const HomeScreen = () => {
             {QUICK_RESOURCES.map((r, i) => (
               <TouchableOpacity
                 key={i}
-                style={[styles.resourceCard, { backgroundColor: C.surfaceContainerLow }]}
+                style={[styles.resourceCard, { backgroundColor: C.surfaceContainerLow, width: resourceCardWidth }]}
                 activeOpacity={0.8}
                 onPress={() => handleResourcePress(r.action)}
               >
@@ -472,11 +469,10 @@ export const HomeScreen = () => {
 
         <View style={{ height: 30 }} />
       </ScrollView>
+      <CrisisSupportModal visible={showCrisisSupport} onClose={() => setShowCrisisSupport(false)} />
     </View>
   );
 };
-
-const CARD_WIDTH = (width - Spacing[5] * 2 - Spacing[3]) / 2;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
@@ -577,7 +573,7 @@ const styles = StyleSheet.create({
 
   // RESOURCES
   resourceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing[3] },
-  resourceCard: { width: CARD_WIDTH, borderRadius: 20, padding: Spacing[4], gap: Spacing[2], alignItems: 'flex-start' },
+  resourceCard: { borderRadius: 20, padding: Spacing[4], gap: Spacing[2], alignItems: 'flex-start' },
   resourceIcon: { width: 44, height: 44, borderRadius: Radius.full, justifyContent: 'center', alignItems: 'center' },
   resourceLabel: { fontFamily: Typography.fontFamily.semiBold, fontSize: Typography.fontSize.md },
   resourceDesc: { fontFamily: Typography.fontFamily.regular, fontSize: Typography.fontSize.xs, lineHeight: Typography.fontSize.xs * 1.5 },

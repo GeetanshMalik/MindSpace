@@ -31,6 +31,7 @@ import {
   getProfileHeadline,
   getProfilePhotoURL,
 } from '../../types/profile';
+import { showStreakRestoreAdSequence } from '../../services/ads/rewardedStreakAds';
 
 const APP_LOGO = require('../../../assets/logo.png');
 
@@ -148,7 +149,7 @@ export const UserProfileScreen = () => {
   const C = useColors();
   const { t } = useTranslation();
   const { user, profile } = useAuthStore();
-  const { streak, hasLostStreak, lostStreak, restoreStreak } = useStreakStore();
+  const { streak, hasLostStreak, lostStreak, missedStreakDays, restoreStreak } = useStreakStore();
   const isDark = C.surface === '#141412';
   const displayName = getProfileDisplayName(profile, user?.displayName);
   const profilePhotoURL = getProfilePhotoURL(profile, user?.photoURL);
@@ -186,6 +187,9 @@ export const UserProfileScreen = () => {
   const [showDobYearPicker, setShowDobYearPicker] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => new Date(2000, 0, 1));
   const [saving, setSaving] = useState(false);
+  const [restoringStreak, setRestoringStreak] = useState(false);
+  const [restoreAdProgress, setRestoreAdProgress] = useState<{ current: number; total: number } | null>(null);
+  const restoreAdCount = Math.max(1, missedStreakDays || (hasLostStreak ? 1 : 0));
 
   const localLocationResults = useMemo<LocationOption[]>(() => {
     const query = editLocation.trim().toLowerCase();
@@ -427,10 +431,38 @@ export const UserProfileScreen = () => {
     }
   };
 
+  const runStreakRestoreAds = async () => {
+    if (restoringStreak) return;
+
+    setRestoringStreak(true);
+    setRestoreAdProgress({ current: 1, total: restoreAdCount });
+
+    try {
+      const completed = await showStreakRestoreAdSequence(restoreAdCount, (current, total) => {
+        setRestoreAdProgress({ current, total });
+      });
+
+      if (!completed) {
+        Alert.alert(t('Restore Streak'), `Please complete all ${restoreAdCount} advertisements to restore your streak.`);
+        return;
+      }
+
+      await restoreStreak(user?.uid);
+      Alert.alert(t('Success'), t('Your streak has been restored!'));
+    } catch (e: any) {
+      Alert.alert(t('Error'), e?.message || 'Could not load advertisement. Please try again.');
+    } finally {
+      setRestoringStreak(false);
+      setRestoreAdProgress(null);
+    }
+  };
+
   const handleRestoreStreak = () => {
-    Alert.alert(t('Restore Streak'), `${t('Watch Ad')} – ${lostStreak} ${t('day streak!')}`, [
+    const previousStreak = Math.max(0, lostStreak);
+    const restoredTotal = previousStreak + restoreAdCount + 1;
+    Alert.alert(t('Restore Streak'), `${restoreAdCount} day${restoreAdCount === 1 ? '' : 's'} streak missing. Watch ${restoreAdCount} advertisement${restoreAdCount === 1 ? '' : 's'} to restore a ${restoredTotal}-day streak.`, [
       { text: t('Cancel'), style: 'cancel' },
-      { text: t('Watch Ad'), onPress: () => { setTimeout(() => { restoreStreak(); Alert.alert(t('Success'), t('Your streak has been restored!')); }, 1000); } },
+      { text: t('Watch Ad'), onPress: runStreakRestoreAds },
     ]);
   };
 
@@ -542,9 +574,15 @@ export const UserProfileScreen = () => {
           </View>
 
           {hasLostStreak && (
-            <TouchableOpacity style={styles.restoreStreakBtn} onPress={handleRestoreStreak}>
+            <TouchableOpacity
+              style={[styles.restoreStreakBtn, restoringStreak && styles.restoreStreakBtnDisabled]}
+              onPress={handleRestoreStreak}
+              disabled={restoringStreak}
+            >
               <Ionicons name="flame" size={16} color="#fff" />
-              <Text style={styles.restoreStreakText}>Restore your {lostStreak} day streak!</Text>
+              <Text style={styles.restoreStreakText}>
+                Restore your streak: {restoreAdCount} day{restoreAdCount === 1 ? '' : 's'} missing
+              </Text>
             </TouchableOpacity>
           )}
         </LinearGradient>
@@ -640,6 +678,20 @@ export const UserProfileScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <Modal visible={restoringStreak} transparent animationType="fade" onRequestClose={() => {}}>
+        <View style={styles.adProgressOverlay}>
+          <View style={[styles.adProgressCard, { backgroundColor: C.surface }]}>
+            <ActivityIndicator size="large" color={C.primary} />
+            <Text translate={false} style={[styles.adProgressTitle, { color: C.onSurface }]}>
+              Advertisement {restoreAdProgress?.current || 1} of {restoreAdProgress?.total || restoreAdCount}
+            </Text>
+            <Text translate={false} style={[styles.adProgressText, { color: C.onSurfaceVariant }]}>
+              Keep watching to restore {restoreAdProgress?.total || restoreAdCount} missed day{(restoreAdProgress?.total || restoreAdCount) === 1 ? '' : 's'}.
+            </Text>
+          </View>
+        </View>
+      </Modal>
 
       {/* ─── Edit Profile Modal ─── */}
       <Modal visible={showEditProfile} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowEditProfile(false)}>
@@ -955,7 +1007,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#ff9800',
     paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999, marginTop: 16,
   },
+  restoreStreakBtnDisabled: { opacity: 0.65 },
   restoreStreakText: { fontFamily: Typography.fontFamily.bold, color: '#fff', fontSize: 13 },
+  adProgressOverlay: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  adProgressCard: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+  },
+  adProgressTitle: { fontFamily: Typography.fontFamily.bold, fontSize: 18 },
+  adProgressText: {
+    fontFamily: Typography.fontFamily.regular,
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: 'center',
+  },
   // ─── Tabs ───
   sectionTabs: { flexDirection: 'row', paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: 'transparent' },
   sectionTab: {

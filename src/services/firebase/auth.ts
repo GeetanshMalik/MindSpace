@@ -9,6 +9,7 @@ import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './config';
 import { UserProfile } from '../../types/profile';
 import { DEFAULT_LANGUAGE } from '../../i18n';
+import { unregisterPushTokenForUser } from '../pushTokenRegistry';
 
 const DEFAULT_APP_SETTINGS = {
   mode: 'light',
@@ -61,6 +62,7 @@ export const signIn = async (email: string, password: string): Promise<User> => 
 };
 
 export const logout = async (): Promise<void> => {
+  await unregisterPushTokenForUser(auth.currentUser?.uid).catch(() => {});
   await signOut(auth);
 };
 

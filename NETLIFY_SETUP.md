@@ -20,11 +20,12 @@ These values are also stored in `netlify.toml`.
 
 Set these in Netlify: Site settings -> Environment variables.
 
+Required for the Netlify functions:
+
 ```text
 FIREBASE_PROJECT_ID=mindspace33756
 FIREBASE_CLIENT_EMAIL=<Firebase service account client_email>
 FIREBASE_PRIVATE_KEY=<Firebase service account private_key>
-EXPO_PUBLIC_PUSH_RELAY_URL=https://your-netlify-site.netlify.app
 ```
 
 For `FIREBASE_PRIVATE_KEY`, keep the full private key value. If Netlify stores it on one line, use `\n` where the key has line breaks.
@@ -37,6 +38,34 @@ FIREBASE_SERVICE_ACCOUNT_BASE64=<base64 encoded service account JSON>
 ```
 
 Do not commit service account keys to GitHub.
+
+Required after the Netlify site URL exists:
+
+```text
+EXPO_PUBLIC_PUSH_RELAY_URL=https://your-netlify-site.netlify.app
+```
+
+Optional web app overrides. The repo has safe defaults for the current Firebase, Supabase, and Cloudinary public config, but these can be set in Netlify if the project values change:
+
+```text
+EXPO_PUBLIC_FIREBASE_API_KEY=<Firebase web API key>
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=mindspace33756.firebaseapp.com
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=mindspace33756
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=mindspace33756.firebasestorage.app
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=60731519244
+EXPO_PUBLIC_FIREBASE_APP_ID=<Firebase web app ID>
+EXPO_PUBLIC_SUPABASE_URL=<Supabase project URL>
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<Supabase anon/publishable key>
+EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME=<Cloudinary cloud name>
+EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=<Cloudinary unsigned upload preset>
+```
+
+Optional AI web variables. Only add these if you are comfortable exposing them to browser users; any `EXPO_PUBLIC_` value is bundled into the public web app:
+
+```text
+EXPO_PUBLIC_GEMINI_API_KEY=<Gemini API key>
+EXPO_PUBLIC_GROQ_API_KEY=<Groq API key>
+```
 
 ## Mobile App Configuration
 

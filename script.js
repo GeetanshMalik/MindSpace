@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 card.innerHTML = `
                     <div class="screenshot-mockup">
-                        <img src="assets/screenshots/${filename}" 
+                        <img src="${filename}" 
                              alt="MindSpace Screenshot ${index + 1}"
                              loading="lazy"
                              onerror="this.parentElement.parentElement.style.display='none'">

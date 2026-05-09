@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MindSpace - A peaceful social space for healing, connection, and emotional support">
+    <meta name="keywords" content="mental health, emotional support, wellness, community, healing">
+    <title>MindSpace - Your Sanctuary for Mental Wellness</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Animation -->
+    <div class="page-loader">
+        <div class="loader-content">
+            <div class="loader-logo">MindSpace</div>
+            <div class="loader-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Welcome Popup Modal -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card">
+            <button class="modal-close" id="modalClose">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="modal-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </div>
+            <h2 class="modal-title">Welcome to MindSpace</h2>
+            <p class="modal-text">A calm digital space where people connect, heal, and support each other through shared experiences and compassionate understanding.</p>
+            <button class="modal-btn" id="modalContinue">Continue</button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/logo.png" alt="MindSpace Logo" class="logo-img">
+                MindSpace
+            </div>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#tech" class="nav-link">Tech</a>
+                <a href="privacy-policy.html" class="nav-link">Privacy</a>
+                <a href="terms.html" class="nav-link">Terms</a>
+                <a href="#download" class="nav-btn">Download App</a>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#features" class="mobile-link">Features</a>
+        <a href="#about" class="mobile-link">About</a>
+        <a href="#tech" class="mobile-link">Tech</a>
+        <a href="privacy-policy.html" class="mobile-link">Privacy</a>
+        <a href="terms.html" class="mobile-link">Terms</a>
+        <a href="#download" class="mobile-link-btn">Download App</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">MindSpace</h1>
+            <p class="hero-tagline">A peaceful social space for healing, connection, and emotional support</p>
+            <div class="hero-buttons">
+                <a href="#download" class="hero-btn hero-btn-primary">
+                    <span>Download App</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                </a>
+                <a href="#features" class="hero-btn hero-btn-secondary">
+                    <span>Explore Features</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-mouse"></div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="screenshots" id="screenshots">
+        <div class="container">
+            <h2 class="section-title">Inside MindSpace</h2>
+            <p class="section-subtitle">Experience a calming interface designed for emotional wellness</p>
+            <div class="screenshots-carousel" id="screenshotsCarousel">
+                <!-- Screenshots will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="container">
+            <h2 class="section-title">A Safe Space for Your Journey</h2>
+            <p class="section-subtitle">MindSpace is more than an app—it's a sanctuary for emotional wellness</p>
+            <div class="about-content">
+                <p class="about-text">
+                    MindSpace is a compassionate digital sanctuary designed for those seeking emotional support and meaningful connections. 
+                    We understand that mental wellness is a journey, not a destination. Our platform provides a safe, judgment-free environment 
+                    where you can share your thoughts, connect with others who truly understand, and find the support you need during challenging times.
+                </p>
+                <p class="about-text">
+                    Every feature is thoughtfully crafted to support your mental health journey. From private journaling to community support, 
+                    from guided meditation to real-time connections, we're here to help you navigate life's ups and downs with compassion and understanding. 
+                    Your privacy is paramount, your voice matters, and your healing is our priority.
+                </p>
+                <div class="about-highlights">
+                    <div class="about-highlight">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        <span>Safe & Private</span>
+                    </div>
+                    <div class="about-highlight">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span>Supportive Community</span>
+                    </div>
+                    <div class="about-highlight">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span>Healing-Focused</span>
+                    </div>
+                    <div class="about-highlight">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                        <span>24/7 Support</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Powerful Features for Your Wellness</h2>
+            <p class="section-subtitle">Everything you need to support your mental health journey</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                    </div>
+                    <h3>Community Feed</h3>
+                    <p>Share your thoughts and experiences with a supportive community</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </div>
+                    <h3>Trending Posts</h3>
+                    <p>Discover the most resonant stories and conversations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </div>
+                    <h3>Emotional Reactions</h3>
+                    <p>Express solidarity and support with meaningful reactions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <h3>Friend System</h3>
+                    <p>Build meaningful connections with people who understand</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </div>
+                    <h3>Real-time Notifications</h3>
+                    <p>Stay connected with instant updates and support</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </div>
+                    <h3>Category Communities</h3>
+                    <p>Join specific groups: Anxiety, Breakup, Loneliness, Self-care</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                    </div>
+                    <h3>Post Sharing</h3>
+                    <p>Share meaningful content that resonates with you</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <h3>Profile System</h3>
+                    <p>Express yourself and track your wellness journey</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                    <h3>Healing-Focused Interactions</h3>
+                    <p>Every interaction is designed to support emotional wellness</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">Your Journey with MindSpace</h2>
+            <p class="section-subtitle">Simple steps to start your healing journey</p>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-number">1</div>
+                    <div class="timeline-content">
+                        <h3>Join Community</h3>
+                        <p>Create your account and find your safe space</p>
+                    </div>
+                </div>
+                <div class="timeline-line"></div>
+                <div class="timeline-item">
+                    <div class="timeline-number">2</div>
+                    <div class="timeline-content">
+                        <h3>Share Thoughts</h3>
+                        <p>Express yourself freely in a judgment-free environment</p>
+                    </div>
+                </div>
+                <div class="timeline-line"></div>
+                <div class="timeline-item">
+                    <div class="timeline-number">3</div>
+                    <div class="timeline-content">
+                        <h3>Support Others</h3>
+                        <p>Offer compassion and receive support in return</p>
+                    </div>
+                </div>
+                <div class="timeline-line"></div>
+                <div class="timeline-item">
+                    <div class="timeline-number">4</div>
+                    <div class="timeline-content">
+                        <h3>Build Connections</h3>
+                        <p>Form meaningful relationships with understanding people</p>
+                    </div>
+                </div>
+                <div class="timeline-line"></div>
+                <div class="timeline-item">
+                    <div class="timeline-number">5</div>
+                    <div class="timeline-content">
+                        <h3>Heal Together</h3>
+                        <p>Grow and heal through shared experiences and support</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="tech-stack" id="tech">
+        <div class="container">
+            <h2 class="section-title">Built with Modern Technology</h2>
+            <p class="section-subtitle">Powered by cutting-edge tools for the best experience</p>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-glow"></div>
+                    <h3>React Native</h3>
+                    <p>Cross-platform mobile development</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-glow"></div>
+                    <h3>Expo</h3>
+                    <p>Rapid development framework</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-glow"></div>
+                    <h3>Firebase</h3>
+                    <p>Real-time backend services</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-glow"></div>
+                    <h3>Firestore</h3>
+                    <p>Cloud database solution</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-glow"></div>
+                    <h3>Expo Notifications</h3>
+                    <p>Push notification system</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-glow"></div>
+                    <h3>Netlify Functions</h3>
+                    <p>Serverless backend</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-glow"></div>
+                    <h3>GitHub Pages</h3>
+                    <p>Static site hosting</p>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-glow"></div>
+                    <h3>Modern Architecture</h3>
+                    <p>Scalable & maintainable</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Privacy & Safety Section -->
+    <section class="privacy-safety">
+        <div class="container">
+            <div class="privacy-content">
+                <div class="privacy-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </div>
+                <h2>Your Privacy & Safety Matter</h2>
+                <div class="privacy-features">
+                    <div class="privacy-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Secure authentication</span>
+                    </div>
+                    <div class="privacy-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Respectful community</span>
+                    </div>
+                    <div class="privacy-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Privacy-focused experience</span>
+                    </div>
+                    <div class="privacy-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <span>Safe emotional environment</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download" id="download">
+        <div class="container">
+            <div class="download-content">
+                <h2>Start Your Healing Journey Today</h2>
+                <p>Join thousands finding support, connection, and peace</p>
+                <div class="download-buttons">
+                    <a href="#" class="download-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                        </svg>
+                        <div>
+                            <span class="download-label">Download on the</span>
+                            <span class="download-store">App Store</span>
+                        </div>
+                    </a>
+                    <a href="#" class="download-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.5,12.92 20.16,13.19L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                        </svg>
+                        <div>
+                            <span class="download-label">Get it on</span>
+                            <span class="download-store">Indus Appstore</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-divider"></div>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="assets/logo.png" alt="MindSpace Logo" class="footer-logo">
+                    <h3>MindSpace</h3>
+                    <p>Your sanctuary for mental wellness</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <a href="#features">Features</a>
+                    <a href="#about">About</a>
+                    <a href="#tech">Technology</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Use</a>
+                </div>
+                <div class="footer-column">
+                    <h4>Connect</h4>
+                    <a href="https://github.com/GeetanshMalik/MindSpace" target="_blank">GitHub</a>
+                    <a href="mailto:support@mindspace.app">Contact</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 MindSpace. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -9,12 +9,14 @@ Fill Netlify's build settings like this:
 ```text
 Branch to deploy: main
 Base directory: leave empty
-Build command: npx expo export -p web
-Publish directory: dist
+Build command: leave empty
+Publish directory: netlify/site
 Functions directory: netlify/functions
 ```
 
 These values are also stored in `netlify.toml`.
+
+This deploy is intentionally backend-only. Netlify publishes a tiny status page from `netlify/site`; it does not export or host the mobile app UI.
 
 ## Required Environment Variables
 
@@ -39,13 +41,15 @@ FIREBASE_SERVICE_ACCOUNT_BASE64=<base64 encoded service account JSON>
 
 Do not commit service account keys to GitHub.
 
-Required after the Netlify site URL exists:
+Required in the mobile app build environment after the Netlify site URL exists:
 
 ```text
 EXPO_PUBLIC_PUSH_RELAY_URL=https://your-netlify-site.netlify.app
 ```
 
-Optional web app overrides. The repo has safe defaults for the current Firebase, Supabase, and Cloudinary public config, but these can be set in Netlify if the project values change:
+You do not need `EXPO_PUBLIC_PUSH_RELAY_URL` in Netlify for the backend-only deploy. You need it wherever the mobile app is bundled, such as EAS environment variables or a local `.env.local`.
+
+Optional web app overrides. These are only needed if you later choose to host the Expo web app on Netlify again:
 
 ```text
 EXPO_PUBLIC_FIREBASE_API_KEY=<Firebase web API key>
@@ -60,7 +64,7 @@ EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME=<Cloudinary cloud name>
 EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=<Cloudinary unsigned upload preset>
 ```
 
-Optional AI web variables. Only add these if you are comfortable exposing them to browser users; any `EXPO_PUBLIC_` value is bundled into the public web app:
+Optional AI web variables. Do not add these for the backend-only deploy. Only add them if you intentionally host the Expo web app and are comfortable exposing them to browser users; any `EXPO_PUBLIC_` value is bundled into the public web app:
 
 ```text
 EXPO_PUBLIC_GEMINI_API_KEY=<Gemini API key>

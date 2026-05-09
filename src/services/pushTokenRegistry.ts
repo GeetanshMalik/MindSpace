@@ -103,16 +103,7 @@ const registerTokenLocally = async (userId: string, token: string, includeLegacy
 export const registerPushTokenForUser = async (userId: string) => {
   const previousOwner = await AsyncStorage.getItem(PUSH_OWNER_KEY);
   const previousToken = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
-
-  await clearPrivatePushTokensForUser(userId).catch((error) => {
-    console.warn('Could not clear stale push tokens for current user:', error);
-  });
-
-  if (!isPushRelayConfigured()) {
-    await clearLegacyPushTokensForUser(userId).catch((error) => {
-      console.warn('Could not clear legacy push tokens for current user:', error);
-    });
-  }
+  const relayConfigured = isPushRelayConfigured();
 
   const token = await registerForPushNotificationsAsync();
   if (!token) {
@@ -120,11 +111,20 @@ export const registerPushTokenForUser = async (userId: string) => {
     return null;
   }
 
+  if (!relayConfigured) {
+    await clearPrivatePushTokensForUser(userId).catch((error) => {
+      console.warn('Could not clear stale push tokens for current user:', error);
+    });
+    await clearLegacyPushTokensForUser(userId).catch((error) => {
+      console.warn('Could not clear legacy push tokens for current user:', error);
+    });
+  }
+
   if (previousOwner && previousOwner !== userId && previousToken) {
     console.log('Push token owner changed; new owner claim will replace stale delivery ownership.');
   }
 
-  if (isPushRelayConfigured()) {
+  if (relayConfigured) {
     await registerPushTokenThroughRelay(token).catch(async (error) => {
       console.warn('Push relay token registration failed; using owner-only local fallback:', error);
       await registerTokenLocally(userId, token, false);

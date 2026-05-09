@@ -1,22 +1,42 @@
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 export const DEFAULT_NOTIFICATION_CHANNEL_ID = 'messages';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    priority: Notifications.AndroidNotificationPriority.MAX,
-  }),
-});
+let notificationHandlerConfigured = false;
+
+const getNativeNotifications = () => {
+  if (Constants.appOwnership === 'expo') return null;
+  return require('expo-notifications');
+};
+
+const configureNotificationHandler = (Notifications: any) => {
+  if (notificationHandlerConfigured) return;
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      priority: Notifications.AndroidNotificationPriority.MAX,
+    }),
+  });
+  notificationHandlerConfigured = true;
+};
 
 export async function registerForPushNotificationsAsync(): Promise<string | null> {
   let token: string | null = null;
+  const Notifications = getNativeNotifications();
+
+  if (!Notifications) {
+    if (Platform.OS === 'android') {
+      console.warn('Android remote push notifications are not available in Expo Go. Use a development build to test push notifications.');
+    }
+    return null;
+  }
+
+  configureNotificationHandler(Notifications);
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(DEFAULT_NOTIFICATION_CHANNEL_ID, {

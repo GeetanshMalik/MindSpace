@@ -9,6 +9,9 @@ dist/
 web-build/
 expo-env.d.ts
 
+# IDE
+.vscode/
+
 # Native
 .kotlin/
 *.orig.*
@@ -42,6 +45,7 @@ yarn-error.*
 
 # Firebase credentials (DO NOT COMMIT)
 google-services.json
+google-services*.json
 GoogleService-Info.plist
 .firebaserc
 firebase-debug.log
@@ -54,10 +58,7 @@ src/services/firebase/config.ts
 src/services/supabase/config.ts
 src/services/cloudinary/config.ts
 
-# Netlify (DO NOT COMMIT)
-netlify.toml
-NETLIFY_SETUP.md
-netlify/
+# Netlify local state
 .netlify/
 
 # Unnecessary guide/setup files
@@ -68,6 +69,7 @@ COMPLETE_*.md
 FIXES_*.md
 setup-*.md
 use-*.md
+!NETLIFY_SETUP.md
 
 # Temporary/debug files
 tsc_output*.txt

@@ -9,7 +9,7 @@ Fill Netlify's build settings like this:
 ```text
 Branch to deploy: main
 Base directory: leave empty
-Build command: leave empty
+Build command: node netlify/scripts/backend-build.js
 Publish directory: netlify/site
 Functions directory: netlify/functions
 ```

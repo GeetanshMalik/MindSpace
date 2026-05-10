@@ -1,4 +1,5 @@
 [build]
+  command = "node netlify/scripts/backend-build.js"
   publish = "netlify/site"
   functions = "netlify/functions"
 

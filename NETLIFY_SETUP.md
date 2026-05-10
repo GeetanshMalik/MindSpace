@@ -28,6 +28,8 @@ Required for the Netlify functions:
 FIREBASE_PROJECT_ID=mindspace33756
 FIREBASE_CLIENT_EMAIL=<Firebase service account client_email>
 FIREBASE_PRIVATE_KEY=<Firebase service account private_key>
+GEMINI_API_KEY=<Gemini API key>
+GROQ_API_KEY=<Groq API key>
 ```
 
 For `FIREBASE_PRIVATE_KEY`, keep the full private key value. If Netlify stores it on one line, use `\n` where the key has line breaks.
@@ -64,13 +66,6 @@ EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME=<Cloudinary cloud name>
 EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=<Cloudinary unsigned upload preset>
 ```
 
-Optional AI web variables. Do not add these for the backend-only deploy. Only add them if you intentionally host the Expo web app and are comfortable exposing them to browser users; any `EXPO_PUBLIC_` value is bundled into the public web app:
-
-```text
-EXPO_PUBLIC_GEMINI_API_KEY=<Gemini API key>
-EXPO_PUBLIC_GROQ_API_KEY=<Groq API key>
-```
-
 ## Mobile App Configuration
 
 The app reads `EXPO_PUBLIC_PUSH_RELAY_URL` at build time.
@@ -94,11 +89,11 @@ EXPO_PUBLIC_SUPABASE_URL=<Supabase project URL>
 EXPO_PUBLIC_SUPABASE_ANON_KEY=<Supabase anon/publishable key>
 EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME=<Cloudinary cloud name>
 EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=<Cloudinary unsigned upload preset>
-EXPO_PUBLIC_GEMINI_API_KEY=<Gemini API key>
-EXPO_PUBLIC_GROQ_API_KEY=<Groq API key>
 ```
 
 `GOOGLE_SERVICES_JSON` should be added as an EAS file variable for every environment you build (`development`, `preview`, and `production`). Use one latest `google-services.json` if all builds use the same Firebase Android app/package.
+
+Do not add Gemini or Groq keys to Expo as `EXPO_PUBLIC_` variables. Sage calls the Netlify `sage-chat` function, and the real AI keys should stay in Netlify only.
 
 Expo Go cannot test Android remote push notifications on SDK 53+. Use a development build for push notification testing.
 
@@ -110,6 +105,7 @@ The app expects these exact endpoints:
 /.netlify/functions/register-push-token
 /.netlify/functions/unregister-push-token
 /.netlify/functions/send-notification
+/.netlify/functions/sage-chat
 ```
 
 Each endpoint requires a Firebase Auth ID token in:

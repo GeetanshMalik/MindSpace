@@ -8,6 +8,10 @@ export interface AIMessage {
 
 // ─── Gemini API ──────────────────────────────────────────────────────
 async function callGemini(messages: AIMessage[]): Promise<string> {
+  if (!AI_CONFIG.GEMINI_API_KEY) {
+    throw new Error('Gemini API key is not configured');
+  }
+
   const contents = messages.map((m) => ({
     role: m.role === 'user' ? 'user' : 'model',
     parts: [{ text: m.content }],
@@ -46,6 +50,10 @@ async function callGemini(messages: AIMessage[]): Promise<string> {
 
 // ─── Groq API ────────────────────────────────────────────────────────
 async function callGroq(messages: AIMessage[]): Promise<string> {
+  if (!AI_CONFIG.GROQ_API_KEY) {
+    throw new Error('Groq API key is not configured');
+  }
+
   const groqMessages = [
     { role: 'system' as const, content: AI_CONFIG.SYSTEM_PROMPT },
     ...messages.map((m) => ({

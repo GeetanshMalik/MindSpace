@@ -81,6 +81,25 @@ For EAS/development builds, set the same value in your EAS environment or local 
 EXPO_PUBLIC_PUSH_RELAY_URL=https://your-netlify-site.netlify.app
 ```
 
+The mobile app also expects these Expo/EAS environment variables:
+
+```text
+EXPO_PUBLIC_FIREBASE_API_KEY=<Firebase web API key>
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=mindspace33756.firebaseapp.com
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=mindspace33756
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=mindspace33756.firebasestorage.app
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=60731519244
+EXPO_PUBLIC_FIREBASE_APP_ID=<Firebase web app ID>
+EXPO_PUBLIC_SUPABASE_URL=<Supabase project URL>
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<Supabase anon/publishable key>
+EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME=<Cloudinary cloud name>
+EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET=<Cloudinary unsigned upload preset>
+EXPO_PUBLIC_GEMINI_API_KEY=<Gemini API key>
+EXPO_PUBLIC_GROQ_API_KEY=<Groq API key>
+```
+
+`GOOGLE_SERVICES_JSON` should be added as an EAS file variable for every environment you build (`development`, `preview`, and `production`). Use one latest `google-services.json` if all builds use the same Firebase Android app/package.
+
 Expo Go cannot test Android remote push notifications on SDK 53+. Use a development build for push notification testing.
 
 ## Functions Deployed

@@ -52,11 +52,7 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 
-# Sensitive config files with API keys (DO NOT COMMIT)
-src/services/ai/aiConfig.ts
-src/services/firebase/config.ts
-src/services/supabase/config.ts
-src/services/cloudinary/config.ts
+# Local secret files (DO NOT COMMIT)
 
 # Netlify local state
 .netlify/
